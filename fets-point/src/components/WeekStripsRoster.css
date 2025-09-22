@@ -1,0 +1,510 @@
+/* Week Strips Roster Styles */
+
+.week-strips-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.roster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #ffcc33 0%, #e6b82e 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.roster-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.roster-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-nav {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-nav:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Status Legend */
+.status-legend {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Week Strip Styles */
+.week-strip {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.week-strip:last-child {
+  border-bottom: none;
+}
+
+.week-header {
+  background: #f8f9fa;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.week-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #495057;
+  margin: 0 0 12px 0;
+}
+
+.day-headers {
+  display: grid;
+  grid-template-columns: 200px repeat(7, 1fr);
+  gap: 1px;
+  margin-top: 8px;
+}
+
+.staff-header {
+  padding: 8px 16px;
+  font-weight: 600;
+  color: #6c757d;
+  background: transparent;
+  text-align: left;
+}
+
+.day-header {
+  padding: 8px;
+  text-align: center;
+  background: #e9ecef;
+  border-radius: 4px;
+}
+
+.day-name {
+  font-weight: 600;
+  color: #495057;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.day-number {
+  font-weight: 700;
+  color: #212529;
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+/* Staff Rows */
+.staff-rows {
+  background: white;
+}
+
+.staff-row {
+  display: grid;
+  grid-template-columns: 200px repeat(7, 1fr);
+  gap: 1px;
+  border-bottom: 1px solid #f1f3f4;
+  min-height: 60px;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.staff-row:hover {
+  background: #f8f9fa;
+}
+
+.staff-row.my-row {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+  border-left: 4px solid #3b82f6;
+}
+
+.staff-row:last-child {
+  border-bottom: none;
+}
+
+.staff-name {
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.staff-name:hover {
+  background: linear-gradient(90deg, #ffcc33, #e6b82e);
+  color: white;
+  transform: translateX(2px);
+}
+
+.staff-info {
+  flex: 1;
+}
+
+.staff-full-name {
+  font-weight: 600;
+  color: #212529;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.staff-department {
+  font-size: 12px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.staff-name:hover .staff-full-name,
+.staff-name:hover .staff-department {
+  color: white;
+}
+
+.day-cells {
+  display: contents;
+}
+
+/* Day Cell Styles */
+.day-cell {
+  position: relative;
+  height: 60px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  border-radius: 6px;
+}
+
+.day-cell:hover {
+  border-color: #ffcc33;
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(255, 204, 51, 0.3);
+}
+
+.day-cell.weekend {
+  position: relative;
+}
+
+.day-cell.weekend::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.day-cell.today {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+/* Status Colors */
+.day-cell.bg-green-500 {
+  background-color: #22c55e;
+}
+
+.day-cell.bg-yellow-500 {
+  background-color: #eab308;
+}
+
+.day-cell.bg-red-500 {
+  background-color: #ef4444;
+}
+
+.day-cell.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.day-cell.bg-gray-200 {
+  background-color: #e5e7eb;
+}
+
+.status-block {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Warning Dot */
+.warning-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: #dc2626;
+  border-radius: 50%;
+  border: 1px solid white;
+  z-index: 5;
+}
+
+/* Overtime Indicator */
+.overtime-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  background-color: #7c3aed;
+  border-radius: 50%;
+  border: 1px solid white;
+  z-index: 5;
+}
+
+/* Hover Tooltip */
+.hover-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-bottom: 4px;
+}
+
+.hover-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1f2937;
+}
+
+.tooltip-date {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tooltip-status {
+  margin-bottom: 1px;
+  color: #d1d5db;
+}
+
+.tooltip-hours {
+  font-size: 11px;
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+/* Empty State */
+.week-strips-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+}
+
+.week-strips-empty h3 {
+  margin-bottom: 12px;
+  color: #495057;
+  font-size: 20px;
+}
+
+.week-strips-empty p {
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .week-strips-container {
+    margin: 0 16px;
+  }
+  
+  .day-headers,
+  .staff-row {
+    grid-template-columns: 160px repeat(7, 1fr);
+  }
+  
+  .roster-header {
+    padding: 16px 20px;
+  }
+  
+  .roster-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .week-strips-container {
+    margin: 0 8px;
+    border-radius: 8px;
+  }
+  
+  .day-headers,
+  .staff-row {
+    grid-template-columns: 120px repeat(7, 1fr);
+  }
+  
+  .staff-name {
+    padding: 12px 16px;
+  }
+  
+  .staff-full-name {
+    font-size: 13px;
+  }
+  
+  .staff-department {
+    font-size: 11px;
+  }
+  
+  .day-cell {
+    height: 50px;
+    margin: 1px;
+  }
+  
+  .week-title {
+    font-size: 16px;
+  }
+  
+  .hover-tooltip {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  
+  .status-legend {
+    padding: 12px 16px;
+    gap: 16px;
+  }
+  
+  .legend-item {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .day-headers,
+  .staff-row {
+    grid-template-columns: 100px repeat(7, 1fr);
+  }
+  
+  .day-cell {
+    height: 45px;
+  }
+  
+  .roster-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .status-legend {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* Animation for smooth interactions */
+.day-cell,
+.staff-name {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.day-cell:active {
+  transform: scale(0.95);
+}
+
+.staff-name:active {
+  transform: translateX(1px) scale(0.98);
+}
+
+/* Focus states for accessibility */
+.day-cell:focus,
+.staff-name:focus {
+  outline: 2px solid #ffcc33;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.week-strips-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+  color: #6c757d;
+}
+
+/* Week strips specific enhancements */
+.week-strips {
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+
+.staff-row:hover .day-cell {
+  border-color: rgba(255, 204, 51, 0.3);
+}
+
+/* Enhanced visual feedback */
+.staff-name::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #6c757d;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.staff-name:hover::after {
+  opacity: 1;
+  border-top-color: white;
+}

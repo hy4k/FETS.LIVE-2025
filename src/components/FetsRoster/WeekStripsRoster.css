@@ -1,0 +1,353 @@
+/* Week Strips Roster Styles */
+
+.week-strips-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.roster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ffcc33;
+}
+
+.roster-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.roster-controls {
+  display: flex;
+  gap: 10px;
+}
+
+/* Status Legend */
+.status-legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Week Strip Styles */
+.week-strip {
+  margin-bottom: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.week-header {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.week-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px 0;
+}
+
+.day-headers {
+  display: grid;
+  grid-template-columns: 150px repeat(7, 1fr);
+  gap: 1px;
+  margin-top: 10px;
+}
+
+.day-header {
+  padding: 8px;
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.day-header:first-child {
+  background: transparent;
+}
+
+/* Staff Rows */
+.staff-rows {
+  background: white;
+}
+
+.staff-row {
+  display: grid;
+  grid-template-columns: 150px repeat(7, 1fr);
+  gap: 1px;
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 50px;
+  align-items: center;
+}
+
+.staff-row:last-child {
+  border-bottom: none;
+}
+
+.staff-name {
+  padding: 15px 20px;
+  font-weight: 600;
+  color: #333;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.staff-name:hover {
+  background: #ffcc33;
+  color: white;
+  transform: translateX(2px);
+}
+
+.day-cells {
+  display: contents;
+}
+
+/* Day Cell Styles */
+.day-cell {
+  position: relative;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-cell:hover {
+  border-color: #ffcc33;
+  transform: scale(1.05);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(255, 204, 51, 0.3);
+}
+
+.day-cell.weekend {
+  background-color: rgba(128, 128, 128, 0.1) !important;
+}
+
+/* Status Colors */
+.day-cell.bg-green-500 {
+  background-color: #10b981;
+}
+
+.day-cell.bg-yellow-500 {
+  background-color: #f59e0b;
+}
+
+.day-cell.bg-red-500 {
+  background-color: #ef4444;
+}
+
+.day-cell.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.day-cell.bg-gray-200 {
+  background-color: #e5e7eb;
+}
+
+.status-block {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Warning Dot */
+.warning-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff6b6b;
+  border-radius: 50%;
+  border: 1px solid white;
+  z-index: 5;
+}
+
+/* Hover Tooltip */
+.hover-tooltip {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hover-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #333;
+}
+
+.tooltip-date {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tooltip-status {
+  margin-bottom: 1px;
+}
+
+.tooltip-hours {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .week-strips-container {
+    padding: 15px;
+  }
+  
+  .day-headers,
+  .staff-row {
+    grid-template-columns: 120px repeat(7, 1fr);
+  }
+  
+  .staff-name {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+  
+  .day-cell {
+    height: 45px;
+  }
+}
+
+@media (max-width: 768px) {
+  .week-strips-container {
+    padding: 10px;
+  }
+  
+  .day-headers,
+  .staff-row {
+    grid-template-columns: 100px repeat(7, 1fr);
+  }
+  
+  .staff-name {
+    padding: 10px;
+    font-size: 13px;
+  }
+  
+  .day-cell {
+    height: 40px;
+  }
+  
+  .week-title {
+    font-size: 16px;
+  }
+  
+  .hover-tooltip {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
+
+/* Animation for smooth interactions */
+.day-cell,
+.staff-name {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.day-cell:active {
+  transform: scale(0.95);
+}
+
+.staff-name:active {
+  transform: translateX(1px) scale(0.98);
+}
+
+/* Focus states for accessibility */
+.day-cell:focus,
+.staff-name:focus {
+  outline: 2px solid #ffcc33;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.week-strips-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* Empty state */
+.week-strips-empty {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.week-strips-empty h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Bulk Operations Button */
+.bulk-operations-btn {
+  background: #ffcc33;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.bulk-operations-btn:hover {
+  background: #e6b82e;
+}

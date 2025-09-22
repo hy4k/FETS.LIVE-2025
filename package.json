@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "sql": "node scripts/run-sql.js"
+  },
+  "devDependencies": {
+    "supabase": "^2.40.7"
+  }
+}

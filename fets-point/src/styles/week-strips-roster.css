@@ -1,0 +1,449 @@
+/* Week-Strips Roster Enhanced Styling */
+
+/* Week Strip Container */
+.week-strip-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.week-strip-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.week-strip-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.week-strip-days-header {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.week-day-header {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  min-width: 40px;
+}
+
+.week-day-header.weekend {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.week-day-header.weekday {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.week-day-header.today {
+  background: #3b82f6;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
+/* Staff Rows */
+.staff-row {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.staff-row:hover {
+  background: #f8fafc;
+}
+
+.staff-row.my-row {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-left: 4px solid #3b82f6;
+}
+
+.staff-row.selected {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-left: 4px solid #f59e0b;
+}
+
+.staff-name-column {
+  width: 200px;
+  flex-shrink: 0;
+  padding-right: 1rem;
+}
+
+.staff-name-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 8px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+}
+
+.staff-name-button:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.staff-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.staff-department {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.staff-indicator {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #3b82f6;
+}
+
+/* Day Boxes Sequence */
+.day-boxes-sequence {
+  flex: 1;
+  display: flex;
+  gap: 2px;
+}
+
+.day-box {
+  flex: 1;
+  min-width: 40px;
+  height: 48px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+}
+
+.day-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.day-box.today {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.day-box.weekend {
+  position: relative;
+}
+
+.day-box.weekend::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(156, 163, 175, 0.2);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Status Colors */
+.day-box.working {
+  background-color: #22c55e;
+  border-color: #16a34a;
+}
+
+.day-box.off {
+  background-color: #eab308;
+  border-color: #ca8a04;
+  color: #000000;
+}
+
+.day-box.leave {
+  background-color: #ef4444;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.day-box.training {
+  background-color: #3b82f6;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.day-box.no-schedule {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
+
+/* Status Indicators */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.conflict-warning {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 1px solid white;
+}
+
+.overtime-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  background: #8b5cf6;
+  border-radius: 50%;
+}
+
+/* Hover Tooltip */
+.day-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 20;
+  margin-bottom: 4px;
+}
+
+.day-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Quick Stats Column */
+.quick-stats {
+  width: 60px;
+  flex-shrink: 0;
+  text-align: center;
+  padding-left: 1rem;
+}
+
+.stats-number {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+/* Legend */
+.week-strips-legend {
+  background: #f8fafc;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Bulk Operations Panel */
+.bulk-operations-panel {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border-top: 4px solid #f59e0b;
+  padding: 1.5rem;
+}
+
+.bulk-operations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.bulk-operations-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.bulk-operations-subtitle {
+  font-size: 0.875rem;
+  color: #b45309;
+  margin-top: 0.25rem;
+}
+
+.bulk-operations-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bulk-operation-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.bulk-operation-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bulk-operation-btn.fill-range {
+  background: #f59e0b;
+}
+
+.bulk-operation-btn.fill-range:hover {
+  background: #d97706;
+}
+
+.bulk-operation-btn.apply-pattern {
+  background: #3b82f6;
+}
+
+.bulk-operation-btn.apply-pattern:hover {
+  background: #2563eb;
+}
+
+.bulk-operation-btn.smart-schedule {
+  background: #22c55e;
+}
+
+.bulk-operation-btn.smart-schedule:hover {
+  background: #16a34a;
+}
+
+.bulk-operation-btn.clear-month {
+  background: #ef4444;
+}
+
+.bulk-operation-btn.clear-month:hover {
+  background: #dc2626;
+}
+
+.bulk-operation-btn.close {
+  background: #6b7280;
+}
+
+.bulk-operation-btn.close:hover {
+  background: #4b5563;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .staff-name-column {
+    width: 160px;
+  }
+  
+  .day-box {
+    min-width: 32px;
+    height: 40px;
+  }
+  
+  .quick-stats {
+    width: 50px;
+  }
+}
+
+@media (max-width: 768px) {
+  .staff-row {
+    padding: 0.5rem 1rem;
+  }
+  
+  .staff-name-column {
+    width: 120px;
+  }
+  
+  .day-box {
+    min-width: 28px;
+    height: 36px;
+  }
+  
+  .week-strips-legend {
+    gap: 1rem;
+  }
+  
+  .bulk-operations-buttons {
+    flex-direction: column;
+  }
+  
+  .bulk-operation-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-name-column {
+    width: 100px;
+  }
+  
+  .day-box {
+    min-width: 24px;
+    height: 32px;
+  }
+  
+  .staff-name {
+    font-size: 0.75rem;
+  }
+  
+  .staff-department {
+    font-size: 0.625rem;
+  }
+  
+  .quick-stats {
+    width: 40px;
+  }
+  
+  .stats-number {
+    font-size: 0.75rem;
+  }
+}

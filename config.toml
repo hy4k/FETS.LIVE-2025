@@ -1,0 +1,13 @@
+[mcp_servers.supabase_readonly]
+type = "command"
+command = "C:\\Users\\USER\\Downloads\\fetslive21sep\\node_modules\\.bin\\mcp-server-supabase.cmd"
+args = ["--project-ref=qqewusetilxxfvfkmsed","--read-only"]
+[mcp_servers.supabase_readonly.env]
+SUPABASE_ACCESS_TOKEN = "$SUPABASE_ACCESS_TOKEN"
+
+[mcp_servers.supabase_readwrite]
+type = "command"
+command = "C:\\Users\\USER\\Downloads\\fetslive21sep\\node_modules\\.bin\\mcp-server-supabase.cmd"
+args = ["--project-ref=qqewusetilxxfvfkmsed"]
+[mcp_servers.supabase_readwrite.env]
+SUPABASE_ACCESS_TOKEN = "$SUPABASE_ACCESS_TOKEN"
