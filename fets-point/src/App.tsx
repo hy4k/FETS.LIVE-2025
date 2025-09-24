@@ -24,6 +24,7 @@ const FetsVault = lazy(() => import('./components/FetsVault').then(module => ({ 
 const FetsIntelligence = lazy(() => import('./components/FetsIntelligence').then(module => ({ default: module.FetsIntelligence })))
 const FetsRoster = lazy(() => import('./components/FetsRoster').then(module => ({ default: module.FetsRoster })))
 const FetsCalendar = lazy(() => import('./components/FetsCalendar').then(module => ({ default: module.FetsCalendar })))
+const FetsConnect = lazy(() => import('./components/FetsConnect').then(module => ({ default: module.default })))
 const LogIncident = lazy(() => import('./components/LogIncident').then(module => ({ default: module.LogIncident })))
 const ChecklistManagement = lazy(() => import('./components/ChecklistManagement').then(module => ({ default: module.ChecklistManagement })))
 const SettingsPage = lazy(() => import('./components/SettingsPage').then(module => ({ default: module.SettingsPage })))
@@ -153,6 +154,10 @@ function AppContent() {
       'fets-calendar': {
         component: <FetsCalendar />,
         name: 'FETS Calendar'
+      },
+      'fets-connect': {
+        component: <FetsConnect />,
+        name: 'FETS Connect'
       },
       'my-desk': {
         component: <MyDesk />,

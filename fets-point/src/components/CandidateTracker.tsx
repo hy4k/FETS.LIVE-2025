@@ -18,6 +18,8 @@ interface Candidate {
   checkInTime?: Date
   notes?: string
   createdAt: Date
+  clientName?: string
+  branchLocation?: string
 }
 
 interface ModernStatsCardProps {
@@ -81,7 +83,9 @@ export function CandidateTracker() {
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [filterClient, setFilterClient] = useState('all')
   const [filterDate, setFilterDate] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'table'>('grid')
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
@@ -114,6 +118,23 @@ export function CandidateTracker() {
   const updateStatusMutation = useUpdateCandidateStatus()
 
   // Transform the data for component use
+  const deriveClientFromExamName = (name?: string): string => {
+    const n = (name || '').toUpperCase()
+    if (n.includes('CMA US')) return 'PROMETRIC'
+    if (n.includes('GRE') || n.includes('TOEFL')) return 'ETS'
+    if (n.includes('VUE') || n.includes('PEARSON')) return 'PEARSON VUE'
+    return 'PEARSON VUE'
+  }
+
+  const CLIENT_STYLE: Record<string, { border: string; tint: string; text: string }> = {
+    'PROMETRIC': { border: '#FF3B30', tint: '#FEF2F2', text: '#7F1D1D' },
+    'ETS': { border: '#FF9500', tint: '#FFF7ED', text: '#7C2D12' },
+    'PEARSON VUE': { border: '#007AFF', tint: '#EFF6FF', text: '#1E3A8A' },
+    'PSI': { border: '#AF52DE', tint: '#F5F3FF', text: '#5B21B6' },
+    'OTHERS': { border: '#9CA3AF', tint: '#F3F4F6', text: '#374151' }
+  }
+  const getClientStyle = (client: string) => CLIENT_STYLE[client] || CLIENT_STYLE['OTHERS']
+
   const candidates: Candidate[] = candidatesData?.map(candidate => ({
     id: candidate.id,
     fullName: candidate.full_name,
@@ -125,7 +146,9 @@ export function CandidateTracker() {
     confirmationNumber: candidate.confirmation_number || generateConfirmationNumber(),
     checkInTime: candidate.check_in_time ? new Date(candidate.check_in_time) : undefined,
     notes: candidate.notes,
-    createdAt: new Date(candidate.created_at)
+    createdAt: new Date(candidate.created_at),
+    clientName: candidate.client_name || deriveClientFromExamName(candidate.exam_name),
+    branchLocation: candidate.branch_location
   })) || []
   const generateConfirmationNumber = () => {
     const prefix = 'EXAM'
@@ -413,11 +436,14 @@ export function CandidateTracker() {
       candidate.confirmationNumber.toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesStatus = filterStatus === 'all' || candidate.status === filterStatus
+    const clientComputed = (candidate.clientName || deriveClientFromExamName(candidate.examName)).toUpperCase()
+    const matchesClient = filterClient === 'all' || clientComputed === filterClient.toUpperCase()
+    const matchesBranch = isGlobalView || candidate.branchLocation === activeBranch
     
     const matchesDate = !filterDate || 
       (candidate.examDate && candidate.examDate.toISOString().split('T')[0] === filterDate)
     
-    return matchesSearch && matchesStatus && matchesDate
+    return matchesSearch && matchesStatus && matchesClient && matchesBranch && matchesDate
   })
 
   const todayCandidates = candidates.filter(candidate => {
@@ -547,6 +573,19 @@ export function CandidateTracker() {
               <option value="no_show">No Show</option>
               <option value="cancelled">Cancelled</option>
             </select>
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {['all','PROMETRIC','ETS','PEARSON VUE','PSI','OTHERS'].map(c => {
+                  const label = c.toUpperCase()
+                  const active = filterClient.toUpperCase() === label
+                  return (
+                    <button key={c} onClick={() => setFilterClient(c)} className={`px-3 py-1.5 rounded-full border text-xs font-semibold whitespace-nowrap ${active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}>
+                      {label === 'ALL' ? 'ALL CLIENTS' : label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
 
             <input
               type="date"
@@ -569,6 +608,15 @@ export function CandidateTracker() {
       {/* Modern Candidates List */}
       <div className="dashboard-section">
         <h2 className="section-title">Candidate List</h2>
+        <div className="flex items-center justify-end mb-3 gap-2">
+          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+            <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 text-sm ${viewMode==='grid'?'bg-gray-100 text-gray-900':'bg-white text-gray-600'}`}>Grid</button>
+            <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 text-sm ${viewMode==='list'?'bg-gray-100 text-gray-900':'bg-white text-gray-600'}`}>List</button>
+            <button onClick={() => setViewMode('table')} className={`px-3 py-1.5 text-sm ${viewMode==='table'?'bg-gray-100 text-gray-900':'bg-white text-gray-600'}`}>Table</button>
+          </div>
+        </div>
+
+        {viewMode === 'list' && (
         <div className="space-y-4">
           {filteredCandidates.map((candidate) => (
             <div key={candidate.id} className="modern-card p-6">
@@ -713,6 +761,71 @@ export function CandidateTracker() {
             </div>
           )}
         </div>
+        )}
+
+        {viewMode === 'grid' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filteredCandidates.map((candidate) => {
+              const client = (candidate.clientName || deriveClientFromExamName(candidate.examName)).toUpperCase()
+              const style = CLIENT_STYLE[client] || CLIENT_STYLE['OTHERS']
+              return (
+                <div key={candidate.id} className="modern-card p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{candidate.fullName}</h3>
+                      <p className="text-gray-500 text-sm">{candidate.confirmationNumber}</p>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded border text-xs font-semibold" style={{ background: style.tint, borderColor: style.border, color: style.text }}>{client}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                    <div className="flex items-center space-x-2"><Mail className="h-4 w-4 text-gray-400" /><span className="text-gray-700 truncate">{candidate.email}</span></div>
+                    {candidate.phone && (<div className="flex items-center space-x-2"><Phone className="h-4 w-4 text-gray-400" /><span className="text-gray-700">{candidate.phone}</span></div>)}
+                    <div>
+                      <p className="text-gray-500 text-xs uppercase">Exam</p>
+                      <p className="text-gray-900 font-medium">{candidate.examName || 'Not specified'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs uppercase">Date</p>
+                      <p className="text-gray-900 font-medium">{candidate.examDate ? candidate.examDate.toLocaleString() : 'Not scheduled'}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {viewMode === 'table' && (
+          <div className="modern-card p-0 overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="text-left px-4 py-2">Name</th>
+                  <th className="text-left px-4 py-2">Email</th>
+                  <th className="text-left px-4 py-2">Client</th>
+                  <th className="text-left px-4 py-2">Exam</th>
+                  <th className="text-left px-4 py-2">Date</th>
+                  <th className="text-left px-4 py-2">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCandidates.map((candidate) => {
+                  const client = (candidate.clientName || deriveClientFromExamName(candidate.examName)).toUpperCase()
+                  return (
+                    <tr key={candidate.id} className="border-t border-gray-100">
+                      <td className="px-4 py-2 text-gray-900">{candidate.fullName}</td>
+                      <td className="px-4 py-2 text-gray-700">{candidate.email}</td>
+                      <td className="px-4 py-2 text-gray-700">{client}</td>
+                      <td className="px-4 py-2 text-gray-700">{candidate.examName || '-'}</td>
+                      <td className="px-4 py-2 text-gray-700">{candidate.examDate ? candidate.examDate.toLocaleString() : '-'}</td>
+                      <td className="px-4 py-2"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>{candidate.status.replace('_',' ').toUpperCase()}</span></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Modern New Candidate Modal */}

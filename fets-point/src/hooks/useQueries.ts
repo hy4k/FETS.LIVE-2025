@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast'
 import type { CandidateMetrics, IncidentStats } from '../types/database.types'
 
 // Enhanced candidates query with real-time integration
-export const useCandidates = (filters?: { date?: string; status?: string }) => {
+export const useCandidates = (filters?: { date?: string; status?: string; branch_location?: string }) => {
   return useQuery<any[], Error>({
     queryKey: ['candidates', filters],
     queryFn: async () => {

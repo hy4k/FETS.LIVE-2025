@@ -37,6 +37,7 @@ const navigationGroups = {
     { id: 'candidate-tracker', name: 'Candidate Tracker', icon: Users },
     { id: 'fets-roster', name: 'FETS Roster', icon: UserCheck, badge: '0' },
     { id: 'fets-calendar', name: 'FETS Calendar', icon: Calendar },
+    { id: 'fets-connect', name: 'FETS Connect', icon: Users },
   ],
   compliance: [
     { id: 'log-incident', name: 'Log Incident', icon: AlertTriangle },

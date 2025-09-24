@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, Plus, ChevronLeft, ChevronRight, Edit, Trash2, X, Check, Clock, Users, Eye, MapPin, Building, Sparkles } from 'lucide-react'
+import { Calendar, Plus, ChevronLeft, ChevronRight, Edit, Trash2, X, Check, Clock, Users, Eye, MapPin, Building } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { useBranch } from '../contexts/BranchContext'
+import { useBranch, useBranchFilter } from '../contexts/BranchContext'
 import { supabase } from '../lib/supabase'
 import { formatDateForIST, getCurrentISTDateString, isToday as isTodayIST, formatDateForDisplay } from '../utils/dateUtils'
 import { validateSessionCapacity, getCapacityStatusColor, formatCapacityDisplay, getBranchCapacity } from '../utils/sessionUtils'
@@ -17,74 +17,24 @@ interface Session {
   user_id: string
   created_at?: string
   updated_at?: string
+  branch_location?: 'calicut' | 'cochin'
 }
 
-// Premium Apple-inspired client color scheme
+// Subtle client palette for elegant look (neutral background with accent border)
 const CLIENT_COLORS = {
-  'PEARSON': {
-    bg: 'linear-gradient(135deg, #007AFF 0%, #5AC8FA 100%)', // Apple Blue
-    text: '#ffffff',
-    border: '#007AFF',
-    shadow: 'rgba(0, 122, 255, 0.3)'
-  },
-  'VUE': {
-    bg: 'linear-gradient(135deg, #34C759 0%, #30D158 100%)', // Apple Green
-    text: '#ffffff', 
-    border: '#34C759',
-    shadow: 'rgba(52, 199, 89, 0.3)'
-  },
-  'ETS': {
-    bg: 'linear-gradient(135deg, #FF9500 0%, #FFCC02 100%)', // Apple Orange
-    text: '#ffffff',
-    border: '#FF9500',
-    shadow: 'rgba(255, 149, 0, 0.3)'
-  },
-  'PSI': {
-    bg: 'linear-gradient(135deg, #AF52DE 0%, #BF5AF2 100%)', // Apple Purple
-    text: '#ffffff',
-    border: '#AF52DE',
-    shadow: 'rgba(175, 82, 222, 0.3)'
-  },
-  'PROMETRIC': {
-    bg: 'linear-gradient(135deg, #FF3B30 0%, #FF6961 100%)', // Apple Red
-    text: '#ffffff',
-    border: '#FF3B30',
-    shadow: 'rgba(255, 59, 48, 0.3)'
-  },
-  'OTHER': {
-    bg: 'linear-gradient(135deg, #8E8E93 0%, #AEAEB2 100%)', // Apple Gray
-    text: '#ffffff',
-    border: '#8E8E93',
-    shadow: 'rgba(142, 142, 147, 0.3)'
-  }
+  'PEARSON': { bg: '#F8FAFC', text: '#111827', border: '#007AFF', tint: '#EFF6FF' },
+  'VUE': { bg: '#F8FAFC', text: '#111827', border: '#34C759', tint: '#ECFDF5' },
+  'ETS': { bg: '#F8FAFC', text: '#111827', border: '#FF9500', tint: '#FFF7ED' },
+  'PSI': { bg: '#F8FAFC', text: '#111827', border: '#AF52DE', tint: '#F5F3FF' },
+  'PROMETRIC': { bg: '#F8FAFC', text: '#111827', border: '#FF3B30', tint: '#FEF2F2' },
+  'OTHER': { bg: '#F8FAFC', text: '#111827', border: '#8E8E93', tint: '#F3F4F6' }
 }
 
-// Enhanced Centre-specific vibrant colors for premium feel
+// Subtle centre accents (kept for potential theming, but used minimally)
 const CENTRE_COLORS = {
-  'calicut': {
-    primary: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)', // Vibrant Orange
-    secondary: '#FF6B35',
-    light: '#FFF4E6',
-    accent: '#FF8A50',
-    shadow: 'rgba(255, 107, 53, 0.4)',
-    glass: 'rgba(255, 107, 53, 0.1)'
-  },
-  'cochin': {
-    primary: 'linear-gradient(135deg, #00C9A7 0%, #00BFA5 100%)', // Vibrant Teal
-    secondary: '#00C9A7', 
-    light: '#E0F7FA',
-    accent: '#26E5C7',
-    shadow: 'rgba(0, 201, 167, 0.4)',
-    glass: 'rgba(0, 201, 167, 0.1)'
-  },
-  'global': {
-    primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Vibrant Purple
-    secondary: '#667eea',
-    light: '#F3E5F5',
-    accent: '#8B7ED8',
-    shadow: 'rgba(102, 126, 234, 0.4)',
-    glass: 'rgba(102, 126, 234, 0.1)'
-  }
+  'calicut': { primary: '#FFFFFF', secondary: '#F1F5F9', light: '#FFFFFF', accent: '#E5E7EB', shadow: 'rgba(0,0,0,0.06)', glass: 'rgba(255,255,255,0.6)' },
+  'cochin': { primary: '#FFFFFF', secondary: '#F1F5F9', light: '#FFFFFF', accent: '#E5E7EB', shadow: 'rgba(0,0,0,0.06)', glass: 'rgba(255,255,255,0.6)' },
+  'global': { primary: '#FFFFFF', secondary: '#F1F5F9', light: '#FFFFFF', accent: '#E5E7EB', shadow: 'rgba(0,0,0,0.06)', glass: 'rgba(255,255,255,0.6)' }
 }
 
 type ClientType = keyof typeof CLIENT_COLORS
@@ -92,6 +42,7 @@ type ClientType = keyof typeof CLIENT_COLORS
 export function FetsCalendar() {
   const { user } = useAuth()
   const { activeBranch } = useBranch()
+  const { applyFilter, isGlobalView } = useBranchFilter()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
@@ -113,7 +64,7 @@ export function FetsCalendar() {
     if (user) {
       loadSessions()
     }
-  }, [user, currentDate])
+  }, [user, currentDate, activeBranch])
 
   // Auto-hide notifications
   useEffect(() => {
@@ -139,16 +90,52 @@ export function FetsCalendar() {
       const startDateIST = formatDateForIST(startOfMonth)
       const endDateIST = formatDateForIST(endOfMonth)
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('sessions')
         .select('*')
         .gte('date', startDateIST)
         .lte('date', endDateIST)
         .order('date', { ascending: true })
+        .order('start_time', { ascending: true })
+
+      // Apply centre filter (Calicut/Cochin). Global shows all.
+      if (!isGlobalView) {
+        query = applyFilter(query)
+      }
+
+      let { data, error } = await query
       
+      // Backward-compat: if branch filter fails or returns nothing for Calicut, fallback to unfiltered (legacy Calicut data)
       if (error) {
-        console.error('Supabase error:', error)
-        throw error
+        const msg = (error as any)?.message?.toLowerCase?.() || ''
+        const isMissingColumn = msg.includes('column') && msg.includes('branch_location')
+        if (isMissingColumn && activeBranch === 'calicut') {
+          const fallback = await supabase
+            .from('sessions')
+            .select('*')
+            .gte('date', startDateIST)
+            .lte('date', endDateIST)
+            .order('date', { ascending: true })
+            .order('start_time', { ascending: true })
+          data = fallback.data || []
+          error = fallback.error as any
+        } else {
+          console.error('Supabase error:', error)
+          throw error
+        }
+      }
+      // Also fallback if no filtered rows for Calicut (legacy data without branch tag)
+      if ((!data || data.length === 0) && activeBranch === 'calicut' && !isGlobalView) {
+        const fallback = await supabase
+          .from('sessions')
+          .select('*')
+          .gte('date', startDateIST)
+          .lte('date', endDateIST)
+          .order('date', { ascending: true })
+          .order('start_time', { ascending: true })
+        if (!fallback.error && fallback.data) {
+          data = fallback.data
+        }
       }
       
       setSessions(data || [])
@@ -296,10 +283,17 @@ export function FetsCalendar() {
     }
 
     try {
-      const sessionData = {
+      // Prevent creating/updating sessions without a specific centre
+      if (activeBranch === 'global') {
+        showNotification('error', 'Please select a centre (Calicut or Cochin) to add or edit sessions.')
+        return
+      }
+
+      const sessionData: Omit<Session, 'id'> & { created_at?: string } = {
         ...formData,
         user_id: user.id,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        branch_location: activeBranch
       }
 
       if (editingSession && editingSession.id) {
@@ -312,7 +306,7 @@ export function FetsCalendar() {
         if (error) throw error
         showNotification('success', 'Session updated successfully!')
       } else {
-        // Create new session
+        // Create session
         const { error } = await supabase
           .from('sessions')
           .insert([{
@@ -385,17 +379,15 @@ export function FetsCalendar() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 50%, #fdf4ff 100%)'
-      }}>
-        <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-12 flex flex-col items-center space-y-6 border border-white/30 shadow-2xl">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-10 flex flex-col items-center space-y-6 border border-gray-200 shadow-xl">
           <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200"></div>
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent absolute inset-0"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-400 border-t-transparent absolute inset-0"></div>
           </div>
           <div className="text-center">
-            <p className="text-gray-700 font-bold text-xl mb-2">Loading Calendar</p>
-            <p className="text-gray-500 text-sm">Preparing your premium experience...</p>
+            <p className="text-gray-800 font-semibold text-lg mb-1">Loading Calendar</p>
+            <p className="text-gray-500 text-sm">Fetching latest sessions…</p>
           </div>
         </div>
       </div>
@@ -403,9 +395,7 @@ export function FetsCalendar() {
   }
 
   return (
-    <div className="min-h-screen" style={{
-      background: 'linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 50%, #fdf4ff 100%)'
-    }}>
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Premium Apple-style Notification System */}
       {notification && (
         <div className={`fixed top-6 right-6 z-50 transform transition-all duration-500 ease-out ${
@@ -438,60 +428,35 @@ export function FetsCalendar() {
         </div>
       )}
 
-      {/* Premium Apple-style Header */}
-      <div className="relative overflow-hidden">
-        <div 
-          className="relative px-8 py-16"
-          style={{ 
-            background: currentTheme.primary,
-            boxShadow: `0 20px 40px ${currentTheme.shadow}`
-          }}
-        >
-          {/* Animated Background Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-10 -left-10 w-72 h-72 rounded-full opacity-20 animate-pulse" 
-                 style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)' }}></div>
-            <div className="absolute top-20 -right-16 w-96 h-96 rounded-full opacity-15 animate-bounce" 
-                 style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)', animationDelay: '1s' }}></div>
-            <div className="absolute bottom-10 left-1/3 w-40 h-40 rounded-full opacity-25 animate-pulse" 
-                 style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)', animationDelay: '2s' }}></div>
-          </div>
-          
-          {/* Main Header Content */}
+      {/* Subtle Header (aligned with roster aesthetics) */}
+      <div className="relative border-b border-gray-200 bg-white">
+        <div className="relative px-8 py-10 max-w-7xl mx-auto">
           <div className="relative z-10 max-w-7xl mx-auto">
             <div className="flex flex-col lg:flex-row items-center justify-between space-y-8 lg:space-y-0">
               
               {/* Brand Section */}
               <div className="text-center lg:text-left">
-                <div className="flex items-center justify-center lg:justify-start mb-6">
-                  <div className="relative p-4 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-2xl">
-                    <Calendar className="h-12 w-12 text-white" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-2xl"></div>
+                <div className="flex items-center justify-center lg:justify-start mb-4">
+                  <div className="relative p-3 bg-gray-100 rounded-xl border border-gray-200">
+                    <Calendar className="h-8 w-8 text-gray-700" />
                   </div>
-                  <div className="ml-6">
-                    <h1 className="text-5xl font-bold text-white tracking-tight mb-2">
-                      FETS CALENDAR
-                    </h1>
-                    <p className="text-white/90 text-xl font-medium">
-                      Premium Session Management
-                    </p>
+                  <div className="ml-4">
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">FETS Calendar</h1>
+                    <p className="text-gray-500 text-sm font-medium">Session planning and overview</p>
                   </div>
                 </div>
                 
                 {/* Status Badge */}
                 <div className="flex items-center justify-center lg:justify-start">
-                  <div className="bg-white/20 backdrop-blur-xl rounded-full px-6 py-3 border border-white/30 shadow-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-                        <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-75"></div>
-                      </div>
-                      <span className="text-white font-semibold">
+                  <div className="bg-gray-50 rounded-full px-4 py-2 border border-gray-200">
+                    <div className="flex items-center space-x-3 text-sm">
+                      <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full" />
+                      <span className="text-gray-700 font-semibold">
                         {activeBranch === 'calicut' ? 'Calicut Centre' : 
                          activeBranch === 'cochin' ? 'Cochin Centre' : 'Global View'}
                       </span>
-                      <Sparkles className="h-4 w-4 text-white/80" />
-                      <span className="text-white/90">{monthYear}</span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-600">{monthYear}</span>
                     </div>
                   </div>
                 </div>
@@ -500,32 +465,31 @@ export function FetsCalendar() {
               {/* Navigation Controls */}
               <div className="flex flex-col space-y-4">
                 {/* Month Navigation */}
-                <div className="flex items-center bg-white/15 backdrop-blur-2xl rounded-2xl p-2 border border-white/25 shadow-xl">
+                <div className="flex items-center bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
                   <button
                     onClick={() => navigateMonth('prev')}
-                    className="p-4 hover:bg-white/20 rounded-xl transition-all duration-300 hover:scale-110 group"
+                    className="p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
                   >
-                    <ChevronLeft className="h-6 w-6 text-white group-hover:text-white transition-colors" />
+                    <ChevronLeft className="h-5 w-5 text-gray-700" />
                   </button>
-                  <div className="px-8 py-2 text-white font-bold text-xl min-w-[200px] text-center">
+                  <div className="px-6 py-2 text-gray-900 font-semibold text-base min-w-[180px] text-center">
                     {monthYear}
                   </div>
                   <button
                     onClick={() => navigateMonth('next')}
-                    className="p-4 hover:bg-white/20 rounded-xl transition-all duration-300 hover:scale-110 group"
+                    className="p-3 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
                   >
-                    <ChevronRight className="h-6 w-6 text-white group-hover:text-white transition-colors" />
+                    <ChevronRight className="h-5 w-5 text-gray-700" />
                   </button>
                 </div>
                 
                 {/* Add Session Button */}
                 <button
                   onClick={() => openModal()}
-                  className="group relative px-8 py-4 bg-white/20 hover:bg-white/30 backdrop-blur-2xl border border-white/30 rounded-2xl text-white font-bold flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                  className="group relative px-6 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl flex items-center justify-center transition-colors duration-200 shadow-sm"
                 >
-                  <Plus className="h-6 w-6 mr-3 group-hover:rotate-90 transition-transform duration-300" />
-                  <span className="text-lg tracking-wide">Add New Session</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <Plus className="h-5 w-5 mr-2" />
+                  <span className="text-sm tracking-wide">Add Session</span>
                 </button>
               </div>
             </div>
@@ -535,9 +499,9 @@ export function FetsCalendar() {
 
       {/* Premium Apple-style Calendar Grid */}
       <div className="px-8 py-8 max-w-7xl mx-auto">
-        <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           {/* Elegant Day Headers - Removed number of sessions text */}
-          <div className="grid grid-cols-7 bg-gradient-to-r from-gray-50/90 to-white/90 border-b border-gray-200/30">
+          <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
             {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
               <div key={day} className="p-6 text-center">
                 <div className="font-bold text-gray-800 text-sm uppercase tracking-widest mb-1">{day.substring(0, 3)}</div>
@@ -564,12 +528,12 @@ export function FetsCalendar() {
                 <div
                   key={index}
                   onClick={() => openDetailsModal(date)}
-                  className={`h-36 p-4 cursor-pointer transition-all duration-300 border-r border-b border-gray-100/50 group hover:shadow-lg ${
+                  className={`h-36 p-4 cursor-pointer transition-all duration-200 border-r border-b border-gray-200/60 group ${
                     isCurrentDay 
-                      ? 'bg-gradient-to-br from-blue-50/80 to-indigo-50/80 ring-2 ring-blue-400/60 ring-inset shadow-lg' 
+                      ? 'bg-white ring-1 ring-gray-300' 
                       : hasEvents
-                      ? 'bg-white/40 hover:bg-white/70'
-                      : 'bg-gray-50/20 hover:bg-gray-50/40'
+                      ? 'bg-white hover:bg-gray-50'
+                      : 'bg-gray-50'
                   }`}
                 >
                   <div className="h-full flex flex-col">
@@ -584,12 +548,8 @@ export function FetsCalendar() {
                       }`}>
                         {date.getDate()}
                       </div>
-                      {isCurrentDay && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      )}
-                      {hasEvents && !isCurrentDay && (
-                        <div className="w-2 h-2 bg-gray-400 rounded-full opacity-60"></div>
-                      )}
+                      {isCurrentDay && (<div className="w-2 h-2 bg-gray-700 rounded-full"></div>)}
+                      {hasEvents && !isCurrentDay && (<div className="w-2 h-2 bg-gray-300 rounded-full"></div>)}
                     </div>
                     
                     {/* Session Indicators */}
@@ -601,17 +561,13 @@ export function FetsCalendar() {
                         return (
                           <div
                             key={client}
-                            className="text-xs rounded-xl px-3 py-2 font-semibold truncate transition-all duration-200 group-hover:scale-105"
-                            style={{
-                              background: clientColor.bg,
-                              color: clientColor.text,
-                              boxShadow: `0 4px 12px ${clientColor.shadow}`
-                            }}
+                            className="text-xs rounded-lg px-3 py-2 font-medium truncate transition-all duration-200 border border-gray-200"
+                            style={{ borderLeft: `4px solid ${clientColor.border}`, color: clientColor.text, background: clientColor.tint }}
                             title={`${client}: ${count} candidates`}
                           >
                             <div className="flex items-center justify-between">
-                              <span className="truncate">{client.substring(0, 8)}</span>
-                              <span className="ml-2 font-bold">{count}</span>
+                              <span className="truncate text-gray-800">{client.substring(0, 10)}</span>
+                              <span className="ml-2 font-semibold text-gray-900">{count}</span>
                             </div>
                           </div>
                         )
@@ -640,40 +596,18 @@ export function FetsCalendar() {
       {/* Premium Apple-style Session Details Modal */}
       {showDetailsModal && selectedDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div 
-            className="absolute inset-0 backdrop-blur-2xl bg-black/30"
-            onClick={closeModal}
-          />
+          <div className="absolute inset-0 backdrop-blur-2xl bg-black/30" onClick={closeModal} />
           
-          <div className="relative w-full max-w-6xl bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden max-h-[85vh] overflow-y-auto">
-            {/* Premium Modal Header */}
-            <div 
-              className="px-8 py-8 border-b border-gray-200/30 relative overflow-hidden"
-              style={{ 
-                background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
-                boxShadow: `0 8px 32px ${currentTheme.shadow}`
-              }}
-            >
-              {/* Header Background Animation */}
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-4 right-4 w-32 h-32 rounded-full animate-pulse" 
-                     style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)' }}></div>
-                <div className="absolute bottom-4 left-4 w-24 h-24 rounded-full animate-bounce" 
-                     style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)', animationDelay: '0.5s' }}></div>
-              </div>
-              
-              <div className="relative z-10 flex items-center justify-between">
+          <div className="relative w-full max-w-6xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden max-h-[85vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="px-8 py-6 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-3xl font-bold text-white tracking-tight flex items-center mb-2">
-                    <Calendar className="h-8 w-8 mr-4" />
-                    {selectedDate.toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
+                  <h3 className="text-2xl font-bold text-gray-900 flex items-center mb-1">
+                    <Calendar className="h-6 w-6 mr-3 text-gray-700" />
+                    {selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                   </h3>
-                  <div className="flex items-center space-x-6 text-white/90">
+                  <div className="flex items-center space-x-6 text-gray-600">
                     <div className="flex items-center space-x-2">
                       <Building className="h-5 w-5" />
                       <span className="font-semibold">{getSessionsForDate(selectedDate).length} Sessions</span>
@@ -688,11 +622,8 @@ export function FetsCalendar() {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={closeModal}
-                  className="p-3 hover:bg-white/20 rounded-2xl transition-all duration-200 hover:scale-110"
-                >
-                  <X className="h-7 w-7 text-white" />
+                <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg">
+                  <X className="h-6 w-6 text-gray-700" />
                 </button>
               </div>
             </div>
@@ -708,38 +639,30 @@ export function FetsCalendar() {
                     const remainingSeats = getRemainingSeats(totalCount)
                     
                     return (
-                      <div key={client} className="bg-white/60 backdrop-blur-xl rounded-2xl border border-gray-200/30 shadow-lg overflow-hidden">
+                      <div key={client} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         {/* Client Header */}
                         <div 
-                          className="p-6 relative overflow-hidden"
-                          style={{
-                            background: clientColor.bg,
-                            boxShadow: `0 4px 20px ${clientColor.shadow}`
-                          }}
+                          className="p-5 relative"
+                          style={{ borderLeft: `4px solid ${clientColor.border}`, background: clientColor.tint }}
                         >
-                          <div className="absolute inset-0 opacity-20">
-                            <div className="absolute top-2 right-2 w-16 h-16 rounded-full animate-pulse" 
-                                 style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)' }}></div>
-                          </div>
-                          
-                          <div className="relative z-10 flex items-center justify-between">
+                          <div className="flex items-center justify-between">
                             <div>
-                              <h4 className="text-2xl font-bold text-white flex items-center mb-2">
-                                <Building className="h-6 w-6 mr-3" />
+                              <h4 className="text-xl font-bold text-gray-900 flex items-center mb-1">
+                                <Building className="h-5 w-5 mr-3 text-gray-700" />
                                 {client}
                               </h4>
-                              <div className="flex items-center space-x-4 text-white/90">
+                              <div className="flex items-center space-x-4 text-gray-600">
                                 <span className="font-semibold">{clientSessions.length} Sessions</span>
                                 <span>•</span>
                                 <span className="font-semibold">{totalCount} Candidates</span>
                               </div>
                             </div>
-                            <div className="text-center bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4 border border-white/30">
-                              <div className="text-white/90 text-sm font-medium mb-1">Remaining Seats</div>
-                              <div className={`text-3xl font-bold ${
-                                remainingSeats > 20 ? 'text-green-200' :
-                                remainingSeats > 10 ? 'text-yellow-200' :
-                                'text-red-200'
+                            <div className="text-center bg-gray-50 rounded-xl px-5 py-3 border border-gray-200">
+                              <div className="text-gray-600 text-sm font-medium mb-1">Remaining Seats</div>
+                              <div className={`text-2xl font-bold ${
+                                remainingSeats > 20 ? 'text-green-600' :
+                                remainingSeats > 10 ? 'text-yellow-600' :
+                                'text-red-600'
                               }`}>
                                 {remainingSeats}
                               </div>
@@ -751,21 +674,21 @@ export function FetsCalendar() {
                         <div className="p-6">
                           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                             {clientSessions.map(session => (
-                              <div key={session.id} className="bg-white/70 backdrop-blur-md rounded-2xl border border-gray-200/50 p-6 hover:shadow-xl transition-all duration-300 hover:scale-105 group">
+                              <div key={session.id} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-md transition-all duration-200 group">
                                 <div className="flex items-start justify-between mb-4">
                                   <div className="flex-1">
                                     <h5 className="font-bold text-gray-900 text-lg mb-3 line-clamp-2">{session.exam_name}</h5>
                                     <div className="space-y-3 text-sm">
                                       <div className="flex items-center text-gray-600">
-                                        <Clock className="h-4 w-4 mr-3 text-blue-500" />
+                                        <Clock className="h-4 w-4 mr-3 text-gray-500" />
                                         <span className="font-semibold">{formatTimeRange(session.start_time, session.end_time)}</span>
                                       </div>
                                       <div className="flex items-center text-gray-600">
-                                        <Users className="h-4 w-4 mr-3 text-green-500" />
+                                        <Users className="h-4 w-4 mr-3 text-gray-500" />
                                         <span className="font-semibold">{session.candidate_count} Candidates</span>
                                       </div>
                                       <div className="flex items-center text-gray-600">
-                                        <MapPin className="h-4 w-4 mr-3 text-purple-500" />
+                                        <MapPin className="h-4 w-4 mr-3 text-gray-500" />
                                         <span className="font-semibold">{getRemainingSeats(session.candidate_count)} Seats Available</span>
                                       </div>
                                     </div>
@@ -779,7 +702,7 @@ export function FetsCalendar() {
                                       e.stopPropagation()
                                       openModal(selectedDate, session)
                                     }}
-                                    className="flex-1 p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all duration-200 hover:scale-105 flex items-center justify-center font-medium shadow-lg"
+                                    className="flex-1 p-3 bg-gray-900 hover:bg-black text-white rounded-xl transition-colors duration-200 flex items-center justify-center font-medium shadow-sm"
                                   >
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
@@ -789,7 +712,7 @@ export function FetsCalendar() {
                                       e.stopPropagation()
                                       session.id && handleDelete(session.id)
                                     }}
-                                    className="flex-1 p-3 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all duration-200 hover:scale-105 flex items-center justify-center font-medium shadow-lg"
+                                    className="flex-1 p-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors duration-200 flex items-center justify-center font-medium shadow-sm"
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Delete
@@ -805,17 +728,17 @@ export function FetsCalendar() {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <div className="bg-gray-100/50 rounded-full p-8 w-32 h-32 mx-auto mb-8 flex items-center justify-center">
-                    <Calendar className="h-16 w-16 text-gray-400" />
+                  <div className="bg-gray-100 rounded-full p-8 w-28 h-28 mx-auto mb-6 flex items-center justify-center">
+                    <Calendar className="h-12 w-12 text-gray-400" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No Sessions Scheduled</h3>
-                  <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">No sessions found for this date. Create your first session to get started.</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">No sessions scheduled</h3>
+                  <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto">No sessions found for this date. Create your first session to get started.</p>
                   <button
                     onClick={() => openModal(selectedDate)}
-                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl flex items-center mx-auto"
+                    className="px-6 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl transition-colors duration-200 shadow-sm flex items-center mx-auto"
                   >
                     <Plus className="h-6 w-6 mr-3" />
-                    Create New Session
+                    Create session
                   </button>
                 </div>
               )}
@@ -827,7 +750,7 @@ export function FetsCalendar() {
                 <div className="flex items-center justify-center">
                   <button
                     onClick={() => openModal(selectedDate)}
-                    className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl flex items-center"
+                    className="px-6 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl transition-colors duration-200 shadow-sm flex items-center"
                   >
                     <Plus className="h-6 w-6 mr-3" />
                     Add Another Session
@@ -847,37 +770,23 @@ export function FetsCalendar() {
             onClick={closeModal}
           />
           
-          <div className="relative w-full max-w-3xl bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+          <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
             {/* Premium Modal Header */}
             <div 
-              className="px-8 py-8 border-b border-gray-200/30 relative overflow-hidden"
-              style={{ 
-                background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
-                boxShadow: `0 8px 32px ${currentTheme.shadow}`
-              }}
-            >
-              {/* Animated Background */}
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-2 right-2 w-24 h-24 rounded-full animate-pulse" 
-                     style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)' }}></div>
-                <div className="absolute bottom-2 left-2 w-16 h-16 rounded-full animate-bounce" 
-                     style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)', animationDelay: '0.5s' }}></div>
-              </div>
-              
-              <div className="relative z-10 flex items-center justify-between">
+              className="px-8 py-6 border-b border-gray-200 bg-gray-50">              <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-3xl font-bold text-white tracking-tight mb-2">
-                    {editingSession ? 'Edit Session' : 'Create New Session'}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    {editingSession ? 'Edit Session' : 'Create session'}
                   </h3>
-                  <p className="text-white/90 text-lg">
+                  <p className="text-gray-600">
                     {editingSession ? 'Update session information' : 'Add a new session to the calendar'}
                   </p>
                 </div>
                 <button
                   onClick={closeModal}
-                  className="p-3 hover:bg-white/20 rounded-2xl transition-all duration-200 hover:scale-110"
+                  className="p-2 hover:bg-gray-100 rounded-lg"
                 >
-                  <X className="h-7 w-7 text-white" />
+                  <X className="h-6 w-6 text-gray-700" />
                 </button>
               </div>
             </div>
@@ -895,7 +804,7 @@ export function FetsCalendar() {
                       value={formData.client_name}
                       onChange={(e) => setFormData({...formData, client_name: e.target.value})}
                       required
-                      className="w-full px-6 py-4 bg-white/70 backdrop-blur-md border-2 border-gray-200/50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none font-medium transition-colors duration-200 shadow-none"
                     >
                       <option value="">Select Client</option>
                       <option value="PEARSON">PEARSON</option>
@@ -916,7 +825,7 @@ export function FetsCalendar() {
                       value={formData.exam_name}
                       onChange={(e) => setFormData({...formData, exam_name: e.target.value})}
                       required
-                      className="w-full px-6 py-4 bg-white/70 backdrop-blur-md border-2 border-gray-200/50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none font-medium transition-colors duration-200 shadow-none"
                       placeholder="Enter exam name"
                     />
                   </div>
@@ -933,7 +842,7 @@ export function FetsCalendar() {
                       value={formData.date}
                       onChange={(e) => setFormData({...formData, date: e.target.value})}
                       required
-                      className="w-full px-6 py-4 bg-white/70 backdrop-blur-md border-2 border-gray-200/50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none font-medium transition-colors duration-200 shadow-none"
                     />
                   </div>
                   
@@ -948,7 +857,7 @@ export function FetsCalendar() {
                       value={formData.candidate_count}
                       onChange={(e) => setFormData({...formData, candidate_count: parseInt(e.target.value) || 1})}
                       required
-                      className="w-full px-6 py-4 bg-white/70 backdrop-blur-md border-2 border-gray-200/50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none font-medium transition-colors duration-200 shadow-none"
                     />
                   </div>
                 </div>
@@ -964,7 +873,7 @@ export function FetsCalendar() {
                       value={formData.start_time}
                       onChange={(e) => setFormData({...formData, start_time: e.target.value})}
                       required
-                      className="w-full px-6 py-4 bg-white/70 backdrop-blur-md border-2 border-gray-200/50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none font-medium transition-colors duration-200 shadow-none"
                     />
                   </div>
                   
@@ -977,24 +886,24 @@ export function FetsCalendar() {
                       value={formData.end_time}
                       onChange={(e) => setFormData({...formData, end_time: e.target.value})}
                       required
-                      className="w-full px-6 py-4 bg-white/70 backdrop-blur-md border-2 border-gray-200/50 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="w-full px-6 py-4 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none font-medium transition-colors duration-200 shadow-none"
                     />
                   </div>
                 </div>
                 
                 {/* Capacity Information Card */}
-                <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-xl p-8 rounded-3xl border border-blue-200/50 shadow-lg">
+                <div className="bg-white p-8 rounded-2xl border border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold text-blue-800 text-lg mb-2 flex items-center">
+                      <h4 className="font-bold text-gray-800 text-lg mb-2 flex items-center">
                         <Users className="h-6 w-6 mr-3" />
                         Capacity Information
                       </h4>
-                      <p className="text-blue-600 font-medium">Maximum capacity: 80 candidates per session</p>
-                      <p className="text-blue-600 text-sm mt-1">Current session: {formData.candidate_count} candidates</p>
+                      <p className="text-gray-600 font-medium">Maximum capacity: 80 candidates per session</p>
+                      <p className="text-gray-600 text-sm mt-1">Current session: {formData.candidate_count} candidates</p>
                     </div>
-                    <div className="text-center bg-white/60 backdrop-blur-xl rounded-2xl px-6 py-4 border border-blue-200/50 shadow-lg">
-                      <div className="text-blue-800 text-sm font-medium mb-1">Seats Remaining</div>
+                    <div className="text-center bg-white rounded-2xl px-6 py-4 border border-blue-200/50 shadow-lg">
+                      <div className="text-gray-800 text-sm font-medium mb-1">Seats Remaining</div>
                       <div className={`text-4xl font-bold ${
                         getRemainingSeats(formData.candidate_count) > 20 ? 'text-green-600' :
                         getRemainingSeats(formData.candidate_count) > 10 ? 'text-yellow-600' :
@@ -1011,13 +920,13 @@ export function FetsCalendar() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="flex-1 px-8 py-4 bg-gray-200/80 hover:bg-gray-300/80 backdrop-blur-md text-gray-800 font-bold rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-colors duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl flex items-center justify-center"
+                    className="flex-1 px-6 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center"
                   >
                     {editingSession ? (
                       <>

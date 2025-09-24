@@ -35,7 +35,7 @@ console.log('✅ Supabase client created successfully')
 // Helper functions for common operations
 export const supabaseHelpers = {
   // Candidates
-  async getCandidates(filters?: { date?: string; status?: string }) {
+  async getCandidates(filters?: { date?: string; status?: string; branch_location?: string }) {
     let query = supabase.from('candidates').select('*')
     
     if (filters?.date) {
@@ -45,6 +45,9 @@ export const supabaseHelpers = {
     
     if (filters?.status) {
       query = query.eq('status', filters.status)
+    }
+    if (filters?.branch_location && filters.branch_location !== 'global') {
+      query = query.eq('branch_location', filters.branch_location)
     }
     
     return query.order('exam_date', { ascending: true })
