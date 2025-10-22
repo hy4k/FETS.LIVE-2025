@@ -495,37 +495,44 @@ export default function CommandCentre({ onNavigate }: { onNavigate?: (tab: strin
 
       {/* FETS NEWS Scroller */}
       {newsItems.length > 0 && (
-        <div className="relative z-10 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-b border-amber-500/30 overflow-hidden">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 bg-gradient-to-r from-amber-500 to-yellow-500 px-6 py-2">
-              <span className="text-black font-bold text-sm tracking-wider">FETS NEWS</span>
-            </div>
+        <>
+          <div className="relative z-10 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border-b border-amber-500/30 overflow-hidden">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 bg-gradient-to-r from-amber-500 to-yellow-500 px-6 py-2">
+                <span className="text-black font-bold text-sm tracking-wider">FETS NEWS</span>
+              </div>
 
-            <div className="flex-1 overflow-hidden py-2">
-              <motion.div
-                className="flex gap-12 whitespace-nowrap"
-                animate={{
-                  x: [0, -2000]
-                }}
-                transition={{
-                  x: {
-                    repeat: Infinity,
-                    repeatType: "loop",
-                    duration: 40,
-                    ease: "linear"
-                  }
-                }}
-              >
-                {[...newsItems, ...newsItems].map((news, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                    <span className="text-black text-sm font-medium">{news}</span>
-                  </div>
-                ))}
-              </motion.div>
+              <div className="flex-1 overflow-hidden py-2">
+                <motion.div
+                  className="flex gap-12 whitespace-nowrap"
+                  animate={{
+                    x: [0, -2000]
+                  }}
+                  transition={{
+                    x: {
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      duration: 40,
+                      ease: "linear"
+                    }
+                  }}
+                >
+                  {[...newsItems, ...newsItems].map((news, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                      <span className="text-black text-sm font-medium">{news}</span>
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </div>
-        </div>
+          <div className="relative z-10 bg-white">
+            <div className="max-w-[1800px] mx-auto px-6">
+              <div className="h-4 sm:h-6"></div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Main Content - Seamlessly Integrated */}

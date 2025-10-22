@@ -89,9 +89,9 @@ const ProgressCircle = ({ percentage, label, value, icon: Icon, color }: any) =>
       transition={{ delay: 0.8 }}
       className="mt-4 text-center"
     >
-      <div className="text-2xl font-bold" style={{ color }}>{percentage}%</div>
+      <div className="text-2xl font-bold" style={{ color }}>{Math.round(percentage)}%</div>
       <div className="text-sm text-gray-600 mt-1">{label}</div>
-      {value && <div className="text-xs text-gray-500 mt-1">{value}</div>}
+      {value && <div className="text-xs text-gray-500 mt-1">{Math.round(value)}</div>}
     </motion.div>
   </div>
 )
@@ -335,22 +335,19 @@ export default function CommandCentrePremium() {
   }
 
   return (
-    <div className="min-h-screen -mt-32 pt-40" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+    <div className="min-h-screen -mt-32 pt-48" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       <div className="max-w-7xl mx-auto px-8">
         {/* Premium Header Section - With spacing from yellow banner */}
-        <div className="mb-12">
+        <div className="mt-8 mb-12">
           <div className="flex items-center gap-4 mb-3">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-300 to-amber-400 flex items-center justify-center shadow-2xl">
-              <Sparkles className="text-black" size={28} />
-            </div>
-            <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight" style={{ fontFamily: "'Inter', 'Poppins', system-ui, sans-serif" }}>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight" style={{ fontFamily: "'Inter', 'Poppins', system-ui, sans-serif", color: '#ffffff' }}>
               Command Centre
             </h1>
           </div>
-          <p className="text-xl text-white/90 font-medium ml-[72px]">
+          <p className="text-xl text-white/90 font-medium">
             {activeBranch?.name ? `${activeBranch.name} - ` : ''}Welcome back, {profile?.full_name || 'User'}
           </p>
-          <p className="text-white/60 text-base mt-2 ml-[72px] font-medium">
+          <p className="text-white/60 text-base mt-2 font-medium">
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
@@ -512,7 +509,7 @@ export default function CommandCentrePremium() {
             <ProgressCircle
               percentage={Math.min(((stats?.totalCandidates || 0) / 1000) * 100, 100)}
               label="Total Candidates"
-              value={stats?.totalCandidates || 0}
+              value={Math.floor(stats?.totalCandidates || 0)}
               icon={Users}
               color="#3b82f6"
             />
@@ -577,16 +574,11 @@ export default function CommandCentrePremium() {
           <SevenDayRosterDisplay />
         </div>
 
-        {/* Premium Footer Badge */}
+        {/* Copyright Footer */}
         <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
-            <Sparkles className="text-yellow-300 w-5 h-5" />
-            <p className="text-white/90 text-sm font-bold tracking-wide">
-              Premium Design System Active
-            </p>
-            <span className="text-white/50">•</span>
-            <p className="text-white/70 text-xs font-medium">
-              Glassmorphic Cards • Animated Widgets • Seamless Flow • Bold Typography
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl">
+            <p className="text-white/80 text-xs font-medium">
+              © 2025-2026 Forun Testing and Educational Service
             </p>
           </div>
         </div>

@@ -54,7 +54,7 @@ export function SevenDayRosterDisplay() {
             date,
             shift_code,
             overtime_hours,
-            staff_profiles(full_name)
+            staff_profiles(full_name, base_centre)
           `)
           .gte('date', startDate)
           .lte('date', endDateStr)
@@ -70,10 +70,18 @@ export function SevenDayRosterDisplay() {
           return
         }
 
+        // Filter rosters by branch if not global
+        let filteredRosters = rosters || []
+        if (activeBranch !== 'global') {
+          filteredRosters = filteredRosters.filter((roster: any) =>
+            roster.staff_profiles?.base_centre === activeBranch
+          )
+        }
+
         // Group roster data by date
         const rosterMap = new Map<string, StaffShift[]>()
 
-        rosters?.forEach((roster: any) => {
+        filteredRosters.forEach((roster: any) => {
           const dateKey = roster.date
           if (!rosterMap.has(dateKey)) {
             rosterMap.set(dateKey, [])
@@ -137,16 +145,21 @@ export function SevenDayRosterDisplay() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-white/98 via-purple-50/30 to-gray-50/95 backdrop-blur-xl rounded-3xl border border-gray-200/60 shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-3xl font-black text-[#1f2937] flex items-center gap-3 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-            <Calendar className="w-8 h-8 text-purple-600" />
-            <span className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">7 Days Roster Schedule</span>
-          </h2>
-          <p className="text-sm text-gray-600 font-medium">Staff assignments for the next 7 days</p>
+    <div className="relative overflow-hidden bg-white/40 backdrop-blur-2xl rounded-3xl border-2 border-white/50 shadow-[0_8px_32px_0_rgba(147,51,234,0.15)] p-8 transition-all duration-300 hover:shadow-[0_12px_48px_0_rgba(147,51,234,0.25)] hover:border-white/70">
+      {/* Glassmorphism overlay effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-white/5 to-pink-500/5 pointer-events-none" />
+
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl font-black text-[#1f2937] flex items-center gap-3 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+              <Calendar className="w-8 h-8 text-purple-600" />
+              <span className="bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">7 Days Roster Schedule</span>
+            </h2>
+            <p className="text-sm text-gray-600 font-medium">Staff assignments for the next 7 days</p>
+          </div>
         </div>
-      </div>
 
       {/* 7-Day Roster Grid */}
       <div className="grid grid-cols-7 gap-4">
@@ -178,23 +191,30 @@ export function SevenDayRosterDisplay() {
             {/* Shifts List */}
             <div className="px-3 py-3 h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {day.shifts.length > 0 ? (
-                <div className="space-y-2">
-                  {day.shifts.map((shift, idx) => {
+                <div className="space-y-2.5">
+                  {day.shifts.map((shift) => {
                     const shiftColor = SHIFT_COLORS[shift.shift_code] || SHIFT_COLORS['D']
                     return (
                       <div
                         key={`${day.date}-${shift.id}`}
-                        className={`p-3 rounded-lg border-l-4 border-purple-500 ${shiftColor.bg} text-xs transition-all hover:shadow-md hover:border-purple-700 ${shiftColor.border}`}
+                        className={`p-3 rounded-xl border-l-4 border-purple-500 ${shiftColor.bg} backdrop-blur-sm transition-all hover:shadow-lg hover:scale-[1.02] hover:border-l-[6px]`}
                       >
-                        <div className={`font-bold ${shiftColor.text} line-clamp-2 text-sm`}>
-                          {shift.staff_name}
+                        {/* Staff Name & Shift Badge */}
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-gray-800 font-bold text-xs truncate flex-1">
+                            {shift.staff_name}
+                          </p>
+                          <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${shiftColor.bg} ${shiftColor.text} border ${shiftColor.border} ml-2`}>
+                            {shift.shift_code}
+                          </span>
                         </div>
-                        <div className="text-gray-600 text-xs mt-1.5 font-semibold">
-                          Shift: <span className={`${shiftColor.text} font-bold text-xs`}>{shift.shift_code}</span>
-                        </div>
+
+                        {/* Overtime Badge */}
                         {shift.overtime_hours > 0 && (
-                          <div className="text-orange-600 text-xs mt-1.5 font-bold bg-orange-100/60 px-2 py-0.5 rounded inline-block">
-                            ⏱️ OT: {shift.overtime_hours}h
+                          <div className="flex justify-end">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-[10px] font-bold border border-orange-200">
+                              ⏱️ {shift.overtime_hours}h OT
+                            </span>
                           </div>
                         )}
                       </div>
@@ -203,7 +223,7 @@ export function SevenDayRosterDisplay() {
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center">
-                  <p className="text-xs text-gray-400 text-center italic">— No shifts assigned —</p>
+                  <p className="text-xs text-gray-400 text-center italic">No shifts assigned</p>
                 </div>
               )}
             </div>
@@ -225,38 +245,48 @@ export function SevenDayRosterDisplay() {
         ))}
       </div>
 
-      {/* Summary Stats */}
+      {/* Today's Overview */}
       {rosterDays && rosterDays.length > 0 && (
-        <div className="mt-8 pt-8 border-t border-gray-200/60">
-          <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">📊 Summary Statistics</h3>
+        <div className="mt-8 pt-8 border-t border-white/40">
+          <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">📊 Today's Overview</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-5 border border-purple-200/60 hover:border-purple-300 transition-all hover:shadow-lg">
-              <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Total Staff</p>
-              <p className="text-3xl font-bold text-purple-600 mt-2">
-                {rosterDays.reduce((sum, day) => sum + day.shifts.length, 0)}
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-5 border border-blue-200/60 hover:border-blue-300 transition-all hover:shadow-lg">
-              <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Days Covered</p>
-              <p className="text-3xl font-bold text-blue-600 mt-2">
-                {rosterDays.filter(day => day.shifts.length > 0).length}
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-5 border border-orange-200/60 hover:border-orange-300 transition-all hover:shadow-lg">
-              <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Total OT Hours</p>
-              <p className="text-3xl font-bold text-orange-600 mt-2">
-                {rosterDays.reduce((sum, day) => sum + day.shifts.reduce((s, shift) => s + (shift.overtime_hours || 0), 0), 0)}h
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-5 border border-green-200/60 hover:border-green-300 transition-all hover:shadow-lg">
-              <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Avg Staff/Day</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">
-                {Math.ceil(rosterDays.reduce((sum, day) => sum + day.shifts.length, 0) / 7)}
-              </p>
-            </div>
+            {(() => {
+              const today = rosterDays[0] // First day is always today
+              const totalOT = today.shifts.reduce((sum, shift) => sum + (shift.overtime_hours || 0), 0)
+              const staffOnLeave = 0 // This would need to come from leave_requests table
+              return (
+                <>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-5 border border-purple-200/60 hover:border-purple-300 transition-all hover:shadow-lg backdrop-blur-md">
+                    <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Total Staff</p>
+                    <p className="text-3xl font-bold text-purple-600 mt-2">
+                      {today.shifts.length}
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-5 border border-orange-200/60 hover:border-orange-300 transition-all hover:shadow-lg backdrop-blur-md">
+                    <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">OT Hours</p>
+                    <p className="text-3xl font-bold text-orange-600 mt-2">
+                      {totalOT}h
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-5 border border-blue-200/60 hover:border-blue-300 transition-all hover:shadow-lg backdrop-blur-md">
+                    <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Shift Types</p>
+                    <p className="text-3xl font-bold text-blue-600 mt-2">
+                      {new Set(today.shifts.map(s => s.shift_code)).size}
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-5 border border-green-200/60 hover:border-green-300 transition-all hover:shadow-lg backdrop-blur-md">
+                    <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">On Leave</p>
+                    <p className="text-3xl font-bold text-green-600 mt-2">
+                      {staffOnLeave}
+                    </p>
+                  </div>
+                </>
+              )
+            })()}
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
