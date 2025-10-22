@@ -1,42 +1,10 @@
-# Node
-node_modules/
-**/node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Vite/Build
-dist/
-**/dist/
-.vite/
-**/.vite/
-*.local
-
-# TypeScript
-*.tsbuildinfo
-
-# Env/Secrets
 .env
 .env.*
 **/.env
 **/.env.*
-.claude_code_config
-test-mcp.js
-
-# OS/Editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# Test Coverage
-coverage/
-
-# Supabase local/emulator (if any)
-.supabase/
-
-# Codex/CLI local config
+*.local
 .codex/
+.claude_code_config
+.supabase/
 nul
 */nul
