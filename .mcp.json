@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "mcp-server-supabase",
+        "--project-ref",
+        "qqewusetilxxfvfkmsed",
+        "--service-role-key-auth"
+      ],
+      "env": {
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      }
+    }
+  }
+}

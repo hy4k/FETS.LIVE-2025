@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    },
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=qqewusetilxxfvfkmsed"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_4aaa4f554db8e17be2a4e83d01f7f448a68e636f"
+      }
+    }
+  }
+}
