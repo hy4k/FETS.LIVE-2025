@@ -1,0 +1,197 @@
+import { useState } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import { supabase, config } from '../lib/supabase'
+import { Shield } from 'lucide-react'
+
+export function Login() {
+  const [email, setEmail] = useState('mithun@fets.in') // Pre-fill test credentials
+  const [password, setPassword] = useState('123456')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const { signIn } = useAuth()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      if (import.meta.env.DEV) {
+        console.log('Login attempt for:', email)
+        console.log('Supabase config:', config)
+      }
+      
+      // Test connection first if in development
+      if (import.meta.env.DEV) {
+        const { error: testError } = await supabase.from('profiles').select('count', { count: 'exact', head: true })
+        if (testError) {
+          console.error('Connection test failed:', testError)
+          setError(`Connection failed: ${testError.message}`)
+          setLoading(false)
+          return
+        }
+        console.log('Connection test passed, proceeding with login')
+      }
+      
+      const { error } = await signIn(email, password)
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('Login failed:', error)
+        }
+        setError(`Login failed: ${error.message}`)
+      } else {
+        if (import.meta.env.DEV) {
+          console.log('Login successful!')
+        }
+      }
+    } catch (err: any) {
+      if (import.meta.env.DEV) {
+        console.error('Login exception:', err)
+      }
+      setError(`Exception: ${err.message || 'Login failed'}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Design Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-yellow-300 to-amber-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-amber-300 to-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -top-40 left-1/2 transform -translate-x-1/2 w-80 h-80 bg-gradient-to-br from-yellow-200 to-amber-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 w-full max-w-md mx-auto">
+        {/* Large Prominent Logo */}
+        <div className="text-center mb-12">
+          <div className="inline-block p-6 rounded-3xl bg-white/80 backdrop-blur-md shadow-2xl border border-white/30 mb-8">
+            <img 
+              src="/fets-live-golden-logo.jpg" 
+              alt="FETS.LIVE" 
+              className="h-32 w-32 object-contain mx-auto"
+            />
+          </div>
+          <h1 className="text-6xl font-black bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 bg-clip-text text-transparent mb-4 tracking-wider" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            FETS.LIVE
+          </h1>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto"></div>
+        </div>
+
+        {/* 3D Login Card */}
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/50 transform transition-all duration-500 hover:scale-105 hover:shadow-3xl">
+          {/* Development Debug Panel */}
+          {import.meta.env.DEV && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-xs">
+              <div className="font-medium mb-1 text-yellow-800">Development Mode</div>
+              <div className="text-yellow-700">
+                <div>URL: {config.url}</div>
+                <div>Key: {config.keyPreview}</div>
+                <div className="text-green-600 mt-1">Environment variables: {import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Fallback'}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="font-medium text-sm text-red-800">Error:</div>
+                <div className="text-xs mt-1 text-red-700">{error}</div>
+              </div>
+            )}
+
+            {/* 3D Email Input */}
+            <div className="space-y-2">
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-6 py-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl focus:ring-4 focus:ring-yellow-300/50 focus:border-yellow-400 transition-all duration-300 text-gray-800 placeholder-gray-500 font-medium shadow-inner text-lg"
+                placeholder="Enter your email"
+                style={{
+                  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5)'
+                }}
+                required
+              />
+            </div>
+
+            {/* 3D Password Input */}
+            <div className="space-y-2">
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-6 py-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl focus:ring-4 focus:ring-yellow-300/50 focus:border-yellow-400 transition-all duration-300 text-gray-800 placeholder-gray-500 font-medium shadow-inner text-lg"
+                placeholder="Enter your password"
+                style={{
+                  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 0 rgba(255, 255, 255, 0.5)'
+                }}
+                required
+              />
+            </div>
+
+            {/* Premium GO LIVE Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-5 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 hover:from-yellow-500 hover:via-amber-500 hover:to-yellow-600 text-white font-black text-xl rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:transform-none shadow-lg"
+              style={{
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 8px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  <span>CONNECTING...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-3">
+                  <Shield className="h-6 w-6" />
+                  <span className="tracking-widest">GO LIVE</span>
+                </div>
+              )}
+            </button>
+          </form>
+
+          {import.meta.env.DEV && (
+            <div className="mt-6 text-center text-xs text-gray-500">
+              Test Credentials: mithun@fets.in / 123456
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
+    </div>
+  )
+}

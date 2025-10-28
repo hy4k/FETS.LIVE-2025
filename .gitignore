@@ -1,0 +1,42 @@
+# Environment variables
+.env
+.env.*
+**/.env
+**/.env.*
+*.local
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# IDE
+.vscode/
+.idea/
+.codex/
+.claude_code_config
+
+# Supabase
+.supabase/
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+*/nul
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.vite-temp/
+**/.vite-temp/
