@@ -20,6 +20,7 @@ build/
 .idea/
 .codex/
 .claude_code_config
+.claude/settings.local.json
 
 # Supabase
 .supabase/
