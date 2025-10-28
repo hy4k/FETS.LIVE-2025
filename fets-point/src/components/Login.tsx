@@ -23,7 +23,7 @@ export function Login() {
       
       // Test connection first if in development
       if (import.meta.env.DEV) {
-        const { error: testError } = await supabase.from('profiles').select('count', { count: 'exact', head: true })
+        const { error: testError } = await supabase.from('staff_profiles').select('count', { count: 'exact', head: true })
         if (testError) {
           console.error('Connection test failed:', testError)
           setError(`Connection failed: ${testError.message}`)

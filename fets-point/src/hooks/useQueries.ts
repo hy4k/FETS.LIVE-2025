@@ -10,7 +10,7 @@ import {
   staffService,
   postsService,
   chatService,
-  profilesService,
+  // profilesService, // DEPRECATED: Use staffService instead
   vaultService,
   ApiError
 } from '../services/api.service'
@@ -555,7 +555,7 @@ export const useProfiles = () => {
     queryKey: ['profiles'],
     queryFn: async () => {
       try {
-        return await profilesService.getAll()
+        return await staffService.getAll()
       } catch (error) {
         handleError(error, 'Fetching profiles')
         throw error
@@ -570,7 +570,7 @@ export const useProfile = (id: string) => {
     queryKey: ['profiles', id],
     queryFn: async () => {
       try {
-        return await profilesService.getById(id)
+        return await staffService.getById(id)
       } catch (error) {
         handleError(error, 'Fetching profile')
         throw error
@@ -584,9 +584,9 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'profiles'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'staff_profiles'> }) => {
       try {
-        return await profilesService.update(id, updates)
+        return await staffService.update(id, updates)
       } catch (error) {
         handleError(error, 'Updating profile')
         throw error

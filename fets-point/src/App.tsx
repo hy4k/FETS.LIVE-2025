@@ -61,7 +61,7 @@ function ConnectionStatus() {
       setConnectionTest('testing')
       console.log('🔄 Testing Supabase connection...')
       
-      const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true })
+      const { error } = await supabase.from('staff_profiles').select('count', { count: 'exact', head: true })
       
       if (error) {
         console.error('❌ Connection test failed:', error.message)

@@ -613,57 +613,63 @@ export const chatService = {
 }
 
 /**
- * Profiles Service
+ * Profiles Service (DEPRECATED)
+ *
+ * This service has been deprecated in favor of staffService.
+ * All functionality should use staff_profiles table instead.
+ *
+ * Migration completed: 2025-01-28
+ * Will be removed in future version.
  */
-export const profilesService = {
-  async getAll() {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('full_name', { ascending: true })
-
-      if (error) throw new ApiError(error.message, error.code, error.details)
-      return data || []
-    } catch (error) {
-      if (error instanceof ApiError) throw error
-      throw new ApiError('Failed to fetch profiles', 'FETCH_ERROR', error)
-    }
-  },
-
-  async getById(id: string) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (error) throw new ApiError(error.message, error.code, error.details)
-      return data
-    } catch (error) {
-      if (error instanceof ApiError) throw error
-      throw new ApiError(`Failed to fetch profile ${id}`, 'FETCH_ERROR', error)
-    }
-  },
-
-  async update(id: string, updates: Updates<'profiles'>) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ ...updates, updated_at: new Date().toISOString() } as any)
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw new ApiError(error.message, error.code, error.details)
-      return data
-    } catch (error) {
-      if (error instanceof ApiError) throw error
-      throw new ApiError(`Failed to update profile ${id}`, 'UPDATE_ERROR', error)
-    }
-  }
-}
+// export const profilesService = {
+//   async getAll() {
+//     try {
+//       const { data, error } = await supabase
+//         .from('profiles')
+//         .select('*')
+//         .order('full_name', { ascending: true })
+//
+//       if (error) throw new ApiError(error.message, error.code, error.details)
+//       return data || []
+//     } catch (error) {
+//       if (error instanceof ApiError) throw error
+//       throw new ApiError('Failed to fetch profiles', 'FETCH_ERROR', error)
+//     }
+//   },
+//
+//   async getById(id: string) {
+//     try {
+//       const { data, error } = await supabase
+//         .from('profiles')
+//         .select('*')
+//         .eq('id', id)
+//         .single()
+//
+//       if (error) throw new ApiError(error.message, error.code, error.details)
+//       return data
+//     } catch (error) {
+//       if (error instanceof ApiError) throw error
+//       throw new ApiError(`Failed to fetch profile ${id}`, 'FETCH_ERROR', error)
+//     }
+//   },
+//
+//   async update(id: string, updates: Updates<'profiles'>) {
+//     try {
+//       const { data, error } = await supabase
+//         .from('profiles')
+//         .update({ ...updates, updated_at: new Date().toISOString() } as any)
+//         .eq('id', id)
+//         .select()
+//         .single()
+//
+//       if (error) throw new ApiError(error.message, error.code, error.details)
+//       return data
+//     } catch (error) {
+//       if (error instanceof ApiError) throw error
+//       throw new ApiError(`Failed to update profile ${id}`, 'UPDATE_ERROR', error)
+//     }
+//   }
+// }
 
 /**
  * Vault Service (Resource Centre)

@@ -77,7 +77,7 @@ export function SettingsPage() {
       setIsLoading(true)
 
       const { error } = await supabase
-        .from('profiles')
+        .from('staff_profiles')
         .update({
           full_name: profileData.fullName,
         })
