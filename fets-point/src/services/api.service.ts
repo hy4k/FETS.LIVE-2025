@@ -4,7 +4,7 @@
  */
 
 import { supabase } from '../lib/supabase'
-import type { Database, Tables, Inserts, Updates } from '../types/database.types'
+import type { Database, Tables, TablesInsert, TablesUpdate } from '../types/database.types'
 
 // Helper type for query filters
 export type QueryFilter<T> = Partial<T>
@@ -74,7 +74,7 @@ export const candidatesService = {
     }
   },
 
-  async create(candidate: Inserts<'candidates'>) {
+  async create(candidate: TablesInsert<'candidates'>) {
     try {
       const { data, error } = await supabase
         .from('candidates')
@@ -90,7 +90,7 @@ export const candidatesService = {
     }
   },
 
-  async update(id: string, updates: Updates<'candidates'>) {
+  async update(id: string, updates: TablesUpdate<'candidates'>) {
     try {
       const { data, error } = await supabase
         .from('candidates')
@@ -123,17 +123,14 @@ export const candidatesService = {
 }
 
 /**
- * Incidents Service
+ * Incidents Service (Events Table)
  */
 export const incidentsService = {
   async getAll(filters?: { status?: string; branch_location?: string }) {
     try {
       let query = supabase
-        .from('incidents')
-        .select(`
-          *,
-          profiles:incidents_reported_by_fkey(full_name)
-        `)
+        .from('events')
+        .select('*')
 
       if (filters?.status) {
         query = query.eq('status', filters.status)
@@ -156,11 +153,8 @@ export const incidentsService = {
   async getById(id: string) {
     try {
       const { data, error } = await supabase
-        .from('incidents')
-        .select(`
-          *,
-          profiles:incidents_reported_by_fkey(full_name)
-        `)
+        .from('events')
+        .select('*')
         .eq('id', id)
         .single()
 
@@ -172,10 +166,10 @@ export const incidentsService = {
     }
   },
 
-  async create(incident: Inserts<'incidents'>) {
+  async create(incident: TablesInsert<'events'>) {
     try {
       const { data, error } = await supabase
-        .from('incidents')
+        .from('events')
         .insert(incident as any)
         .select()
         .single()
@@ -188,10 +182,10 @@ export const incidentsService = {
     }
   },
 
-  async update(id: string, updates: Updates<'incidents'>) {
+  async update(id: string, updates: TablesUpdate<'events'>) {
     try {
       const { data, error } = await supabase
-        .from('incidents')
+        .from('events')
         .update({ ...updates, updated_at: new Date().toISOString() } as any)
         .eq('id', id)
         .select()
@@ -208,7 +202,7 @@ export const incidentsService = {
   async delete(id: string) {
     try {
       const { error } = await supabase
-        .from('incidents')
+        .from('events')
         .delete()
         .eq('id', id)
 
@@ -230,7 +224,7 @@ export const rosterService = {
         .from('roster_schedules')
         .select(`
           *,
-          profiles!roster_schedules_profile_id_fkey(full_name, role)
+          staff_profiles!roster_schedules_profile_id_fkey(full_name, role)
         `)
 
       if (filters?.date) {
@@ -251,7 +245,7 @@ export const rosterService = {
     }
   },
 
-  async create(schedule: Inserts<'roster_schedules'>) {
+  async create(schedule: TablesInsert<'roster_schedules'>) {
     try {
       const { data, error } = await supabase
         .from('roster_schedules')
@@ -267,7 +261,7 @@ export const rosterService = {
     }
   },
 
-  async update(id: string, updates: Updates<'roster_schedules'>) {
+  async update(id: string, updates: TablesUpdate<'roster_schedules'>) {
     try {
       const { data, error } = await supabase
         .from('roster_schedules')
@@ -337,7 +331,7 @@ export const sessionsService = {
     }
   },
 
-  async create(session: Inserts<'sessions'>) {
+  async create(session: TablesInsert<'sessions'>) {
     try {
       const { data, error } = await supabase
         .from('sessions')
@@ -353,7 +347,7 @@ export const sessionsService = {
     }
   },
 
-  async update(id: number, updates: Updates<'sessions'>) {
+  async update(id: number, updates: TablesUpdate<'sessions'>) {
     try {
       const { data, error } = await supabase
         .from('sessions')
@@ -427,7 +421,7 @@ export const staffService = {
     }
   },
 
-  async create(staff: Inserts<'staff_profiles'>) {
+  async create(staff: TablesInsert<'staff_profiles'>) {
     try {
       const { data, error } = await supabase
         .from('staff_profiles')
@@ -443,7 +437,7 @@ export const staffService = {
     }
   },
 
-  async update(id: string, updates: Updates<'staff_profiles'>) {
+  async update(id: string, updates: TablesUpdate<'staff_profiles'>) {
     try {
       const { data, error } = await supabase
         .from('staff_profiles')
@@ -485,7 +479,7 @@ export const postsService = {
         .from('posts')
         .select(`
           *,
-          profiles(full_name),
+          staff_profiles(full_name),
           post_media(*),
           post_likes(count),
           post_comments(count)
@@ -509,7 +503,7 @@ export const postsService = {
     }
   },
 
-  async create(post: Inserts<'posts'>) {
+  async create(post: TablesInsert<'posts'>) {
     try {
       const { data, error } = await supabase
         .from('posts')
@@ -525,7 +519,7 @@ export const postsService = {
     }
   },
 
-  async update(id: string, updates: Updates<'posts'>) {
+  async update(id: string, updates: TablesUpdate<'posts'>) {
     try {
       const { data, error } = await supabase
         .from('posts')
@@ -567,7 +561,7 @@ export const chatService = {
         .from('chat_messages')
         .select(`
           *,
-          profiles(full_name)
+          staff_profiles(full_name)
         `)
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
@@ -580,7 +574,7 @@ export const chatService = {
     }
   },
 
-  async sendMessage(message: Inserts<'chat_messages'>) {
+  async sendMessage(message: TablesInsert<'chat_messages'>) {
     try {
       const { data, error } = await supabase
         .from('chat_messages')

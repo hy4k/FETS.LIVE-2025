@@ -53,17 +53,14 @@ export const supabaseHelpers = {
     return query.order('exam_date', { ascending: true })
   },
   
-  // Incidents
+  // Incidents (Events Table)
   async getIncidents(status?: string) {
-    let query = supabase.from('incidents').select(`
-      *,
-      profiles:incidents_reported_by_fkey(full_name)
-    `)
-    
+    let query = supabase.from('events').select('*')
+
     if (status) {
       query = query.eq('status', status)
     }
-    
+
     return query.order('created_at', { ascending: false })
   },
   
@@ -73,13 +70,13 @@ export const supabaseHelpers = {
       .from('roster_schedules')
       .select(`
         *,
-        profiles!roster_schedules_profile_id_fkey(full_name, role)
+        staff_profiles!roster_schedules_profile_id_fkey(full_name, role)
       `)
-    
+
     if (date) {
       query = query.eq('date', date)
     }
-    
+
     return query.order('date', { ascending: true })
   }
 }

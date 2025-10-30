@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabaseHelpers, supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
-import type { CandidateMetrics, IncidentStats, Tables, Inserts, Updates } from '../types/database.types'
+import type { CandidateMetrics, IncidentStats, Tables, TablesInsert, TablesUpdate } from '../types/database.types'
 import {
   candidatesService,
   incidentsService,
@@ -87,12 +87,9 @@ export const useIncidentStats = (branch?: string): { data: IncidentStats | undef
     queryKey: ['incidents', 'stats', branch],
     queryFn: async (): Promise<IncidentStats> => {
       let query = supabase
-        .from('incidents')
-        .select(`
-          *,
-          profiles:incidents_reported_by_fkey(full_name)
-        `)
-      
+        .from('events')
+        .select('*')
+
       // Apply branch filtering
       if (branch && branch !== 'global') {
         query = query.eq('branch_location', branch)
@@ -361,7 +358,7 @@ export const useCreateStaff = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (staffData: Inserts<'staff_profiles'>) => {
+    mutationFn: async (staffData: TablesInsert<'staff_profiles'>) => {
       try {
         return await staffService.create(staffData)
       } catch (error) {
@@ -380,7 +377,7 @@ export const useUpdateStaff = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'staff_profiles'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: TablesUpdate<'staff_profiles'> }) => {
       try {
         return await staffService.update(id, updates)
       } catch (error) {
@@ -584,7 +581,7 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'staff_profiles'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: TablesUpdate<'staff_profiles'> }) => {
       try {
         return await staffService.update(id, updates)
       } catch (error) {

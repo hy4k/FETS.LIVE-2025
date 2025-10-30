@@ -96,7 +96,7 @@ export default function IncidentManager() {
     try {
       setLoading(true)
       let query = supabase
-        .from('incidents')
+        .from('events')
         .select('*')
         .order('event_date', { ascending: false })
 
@@ -124,7 +124,7 @@ export default function IncidentManager() {
   const loadStats = useCallback(async () => {
     try {
       let query = supabase
-        .from('incidents')
+        .from('events')
         .select('status, priority, category, event_date, created_at, closed_at')
 
       if (activeBranch !== 'global') {
@@ -539,7 +539,7 @@ function NewIncidentModal({ onClose, onIncidentCreated }: {
     setSubmitting(true)
     try {
       const { error } = await supabase
-        .from('incidents')
+        .from('events')
         .insert({
           title: formData.title,
           description: formData.description,
@@ -731,7 +731,7 @@ function IncidentDetailModal({ incident, onClose, onIncidentUpdated }: {
     setUpdating(true)
     try {
       const { error } = await supabase
-        .from('incidents')
+        .from('events')
         .update({
           title: editForm.title,
           description: editForm.description,
@@ -764,7 +764,7 @@ function IncidentDetailModal({ incident, onClose, onIncidentUpdated }: {
     }
 
     try {
-      const { error } = await supabase.from('incidents').delete().eq('id', incident.id)
+      const { error } = await supabase.from('events').delete().eq('id', incident.id)
       if (error) throw error
 
       toast.success('Incident deleted successfully')
@@ -787,7 +787,7 @@ function IncidentDetailModal({ incident, onClose, onIncidentUpdated }: {
         updateData.closed_at = new Date().toISOString()
       }
 
-      const { error } = await supabase.from('incidents').update(updateData).eq('id', incident.id)
+      const { error } = await supabase.from('events').update(updateData).eq('id', incident.id)
       if (error) throw error
 
       toast.success(`Incident ${newStatus === 'closed' ? 'closed' : 'updated'} successfully`)

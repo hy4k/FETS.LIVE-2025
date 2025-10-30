@@ -885,10 +885,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "incidents_reported_by_fkey"
+            foreignKeyName: "incidents_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "staff_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -920,14 +920,14 @@ export type Database = {
             foreignKeyName: "kudos_giver_id_fkey"
             columns: ["giver_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "staff_profiles"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "kudos_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "staff_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1241,6 +1241,9 @@ export type Database = {
           id: string
           pinned: boolean | null
           visibility: string | null
+          post_type: string | null
+          file_url: string | null
+          poll_options: any | null
         }
         Insert: {
           author_id?: string | null
@@ -1753,7 +1756,7 @@ export type Database = {
             foreignKeyName: "vault_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "staff_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1832,7 +1835,7 @@ export type Database = {
             foreignKeyName: "vault_item_pins_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "staff_profiles"
             referencedColumns: ["id"]
           },
         ]

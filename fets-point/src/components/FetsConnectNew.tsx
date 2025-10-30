@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Send, Image as ImageIcon, Trash2, X } from 'lucide-react';
+import { Heart, MessageCircle, Send, Image as ImageIcon, Trash2, X, MessageSquare, HelpCircle, Award, BarChart3, Paperclip, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -12,6 +12,7 @@ import {
   useUploadImage,
 } from '../hooks/useSocial';
 import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
 
 const FetsConnectNew: React.FC = () => {
   const { data: posts = [], isLoading } = useSocialPosts();
@@ -23,8 +24,10 @@ const FetsConnectNew: React.FC = () => {
   const uploadImage = useUploadImage();
 
   const [postContent, setPostContent] = useState('');
+  const [postType, setPostType] = useState<'discussion' | 'question' | 'kudos' | 'poll'>('discussion');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +81,6 @@ const FetsConnectNew: React.FC = () => {
 
   const handleCreatePost = async () => {
     if (!postContent.trim() && !selectedImage) {
-      toast.error('Please enter some text or select an image');
       return;
     }
     
@@ -118,18 +120,24 @@ const FetsConnectNew: React.FC = () => {
     }
 
     try {
-      await createPost.mutateAsync({
+      const { error } = await supabase.from('posts').insert({
         content: postContent || 'Post',
-        image_url: imageUrl,
-        user_id: profile.id, // Use profile.id, not auth user id
+        author_id: profile.id,
+        post_type: postType,
+        branch_location: profile.branch_assigned
       });
 
+      if (error) throw error;
+
+      toast.success('Posted!');
       setPostContent('');
+      setPostType('discussion');
       setSelectedImage(null);
       setImagePreview(null);
+      window.location.reload();
     } catch (error: any) {
       console.error('Post creation error:', error);
-      toast.error(error.message || 'Failed to create post. Please try again.');
+      toast.error(error.message || 'Failed to create post');
     }
   };
 
@@ -226,10 +234,58 @@ const FetsConnectNew: React.FC = () => {
               <textarea
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
-                placeholder="What's on your mind?"
+                placeholder="Share thoughts, ideas, or updates"
                 className="w-full p-3 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 rows={3}
               />
+
+              {/* Post Type Selector */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => setPostType('discussion')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    postType === 'discussion'
+                      ? 'bg-orange-100 text-orange-700 border-2 border-orange-300'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Discussion</span>
+                </button>
+                <button
+                  onClick={() => setPostType('question')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    postType === 'question'
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span>Question</span>
+                </button>
+                <button
+                  onClick={() => setPostType('kudos')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    postType === 'kudos'
+                      ? 'bg-pink-100 text-pink-700 border-2 border-pink-300'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Kudos</span>
+                </button>
+                <button
+                  onClick={() => setPostType('poll')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    postType === 'poll'
+                      ? 'bg-teal-100 text-teal-700 border-2 border-teal-300'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Poll</span>
+                </button>
+              </div>
 
               {imagePreview && (
                 <div className="mt-3 relative">
@@ -251,20 +307,28 @@ const FetsConnectNew: React.FC = () => {
               )}
 
               <div className="flex items-center justify-between mt-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ImageIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">Photo</span>
-                </button>
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                    <span className="text-sm font-medium">Photo</span>
+                  </button>
+                  <button
+                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Paperclip className="w-5 h-5" />
+                    <span className="text-sm font-medium">Attach</span>
+                  </button>
+                </div>
 
                 <button
                   onClick={handleCreatePost}
@@ -301,7 +365,22 @@ const FetsConnectNew: React.FC = () => {
                         {post.user?.full_name?.charAt(0) || 'U'}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{post.user?.full_name || 'Unknown User'}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900">{post.user?.full_name || 'Unknown User'}</h3>
+                          {post.post_type && (
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              post.post_type === 'question' ? 'bg-blue-100 text-blue-700' :
+                              post.post_type === 'kudos' ? 'bg-pink-100 text-pink-700' :
+                              post.post_type === 'poll' ? 'bg-teal-100 text-teal-700' :
+                              'bg-orange-100 text-orange-700'
+                            }`}>
+                              {post.post_type === 'question' ? '❓ Question' :
+                               post.post_type === 'kudos' ? '🏆 Kudos' :
+                               post.post_type === 'poll' ? '📊 Poll' :
+                               '💬 Discussion'}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">{post.user?.role || 'Staff'}</p>
                         <p className="text-xs text-gray-400 mt-1">
                           {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
@@ -337,7 +416,7 @@ const FetsConnectNew: React.FC = () => {
                 </div>
 
                 {/* Post Actions */}
-                <div className="px-6 py-3 border-t border-gray-100 flex gap-4">
+                <div className="px-6 py-3 border-t border-gray-100 flex gap-2">
                   <button
                     onClick={() => handleToggleLike(post.id)}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium transition-all ${
@@ -356,6 +435,20 @@ const FetsConnectNew: React.FC = () => {
                   >
                     <MessageCircle className="w-5 h-5" />
                     <span>Comment</span>
+                  </button>
+
+                  <button
+                    onClick={async () => {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) return;
+                      const { data: profile } = await supabase.from('staff_profiles').select('id').eq('user_id', user.id).single();
+                      if (!profile) return;
+                      await supabase.from('post_shares').insert({ post_id: post.id, user_id: profile.id });
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    <Share2 className="w-5 h-5" />
+                    <span>Share</span>
                   </button>
                 </div>
 
