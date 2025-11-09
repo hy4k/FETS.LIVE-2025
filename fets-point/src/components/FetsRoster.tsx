@@ -108,18 +108,24 @@ export function FetsRoster() {
       // Load staff profiles with branch-specific filtering
       let profileQuery = supabase
         .from('staff_profiles')
-        .select('id, user_id, full_name, role, email, department, base_centre')
+        .select('id, user_id, full_name, role, email, department, branch_assigned')
         .not('full_name', 'in', '("MITHUN","NIYAS","Mithun","Niyas")')
       
       // Apply branch filtering based on active branch
       if (activeBranch === 'calicut') {
-        profileQuery = profileQuery.eq('base_centre', 'calicut')
+        console.log('🔍 Filtering for Calicut branch')
+        profileQuery = profileQuery.eq('branch_assigned', 'calicut')
       } else if (activeBranch === 'cochin') {
-        profileQuery = profileQuery.eq('base_centre', 'cochin')
+        console.log('🔍 Filtering for Cochin branch')
+        profileQuery = profileQuery.eq('branch_assigned', 'cochin')
+      } else {
+        console.log('🔍 Loading all branches (Global mode)')
       }
       // For global mode, load all staff (except super admins)
-      
+
       const { data: profiles, error: profilesError } = await profileQuery.order('full_name')
+
+      console.log(`📊 Loaded ${profiles?.length || 0} staff profiles for ${activeBranch} branch`)
       
       if (profilesError) throw profilesError
       
@@ -130,7 +136,7 @@ export function FetsRoster() {
         role: profile.role,
         email: profile.email || '',
         department: profile.department,
-        base_centre: profile.base_centre
+        branch_assigned: profile.branch_assigned
       }))
       
       setStaffProfiles(mappedProfiles)

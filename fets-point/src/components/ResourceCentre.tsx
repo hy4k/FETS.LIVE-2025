@@ -8,7 +8,6 @@ import {
   CheckCircle, TrendingUp
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
-import { useBranch } from '../hooks/useBranch'
 import { supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
 
@@ -62,7 +61,6 @@ const TYPE_CONFIG = {
 
 export default function ResourceCentre() {
   const { profile } = useAuth()
-  const { activeBranch } = useBranch()
 
   const [categories, setCategories] = useState<VaultCategory[]>([])
   const [items, setItems] = useState<VaultItem[]>([])

@@ -9,7 +9,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion'
 import { useBranch } from '../hooks/useBranch'
 
-const StatCard = ({ title, value, icon: Icon, color, change, isCurrency = false }) => (
+const StatCard = ({ title, value, icon: Icon, color, change = null, isCurrency = false }: any) => (
   <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-white/20">
     <div className="flex items-center justify-between">
       <p className="text-sm font-medium text-gray-500">{title}</p>

@@ -5,18 +5,22 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useBranch } from '../hooks/useBranch';
 import { RealtimeIndicator } from './RealtimeIndicators';
+import { BranchSwitcher } from './BranchSwitcher';
+import { useUnreadCount } from '../hooks/useNotifications';
+import NotificationPanel from './iCloud/NotificationPanel';
 
 interface HeaderProps {
   isMobile?: boolean;
   sidebarOpen?: boolean;
   setSidebarOpen?: (open: boolean) => void;
-  hideBranchSelector?: boolean;
 }
 
-export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, hideBranchSelector = false }: HeaderProps = {}) {
+export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen }: HeaderProps = {}) {
   const { signOut, profile, user } = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { activeBranch, setActiveBranch, userAccessLevel } = useBranch();
+  const unreadCount = useUnreadCount();
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -97,63 +101,37 @@ export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, 
               </div>
             </div>
 
-            {/* Center: Branch Selector - Premium Design */}
-            {!isMobile && !hideBranchSelector && (
-              <div className="flex items-center gap-2 bg-black/15 backdrop-blur-md rounded-2xl p-1.5 border border-black/20 shadow-xl">
-                <button
-                  onClick={() => setActiveBranch('calicut')}
-                  className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                    activeBranch === 'calicut'
-                      ? 'bg-gradient-to-r from-black/30 to-black/25 text-black shadow-xl transform scale-105 border border-black/30'
-                      : 'text-black/70 hover:text-black hover:bg-black/10'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                  </svg>
-                  Calicut
-                </button>
-                <button
-                  onClick={() => setActiveBranch('cochin')}
-                  className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                    activeBranch === 'cochin'
-                      ? 'bg-gradient-to-r from-black/30 to-black/25 text-black shadow-xl transform scale-105 border border-black/30'
-                      : 'text-black/70 hover:text-black hover:bg-black/10'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                  </svg>
-                  Cochin
-                </button>
-                {(userAccessLevel === 'super_admin' || userAccessLevel === 'admin') && (
-                  <button
-                    onClick={() => setActiveBranch('global')}
-                    className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                      activeBranch === 'global'
-                        ? 'bg-gradient-to-r from-black/30 to-black/25 text-black shadow-xl transform scale-105 border border-black/30'
-                        : 'text-black/70 hover:text-black hover:bg-black/10'
-                    }`}
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                    </svg>
-                    Global
-                  </button>
-                )}
+            {/* Center: Branch Display (Read-only) */}
+            {!isMobile && (
+              <div className="flex items-center gap-2 bg-black/15 backdrop-blur-md rounded-2xl px-6 py-3 border border-black/20 shadow-xl">
+                <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                </svg>
+                <span className="text-sm font-bold text-black">
+                  {activeBranch === 'calicut' ? 'Calicut' : activeBranch === 'cochin' ? 'Cochin' : 'Global'}
+                </span>
               </div>
             )}
 
             {/* Right Side: Actions - Enhanced */}
             <div className="flex items-center gap-3">
+              {/* Branch Switcher (Super Admin Only) */}
+              <BranchSwitcher />
+
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
                 {/* Notifications */}
-                <button className="p-2.5 rounded-xl hover:bg-black/10 transition-all duration-200 relative shadow-sm">
+                <button
+                  onClick={() => setShowNotificationPanel(!showNotificationPanel)}
+                  className="p-2.5 rounded-xl hover:bg-black/10 transition-all duration-200 relative shadow-sm"
+                  title="Notifications"
+                >
                   <Bell className="h-5 w-5 text-black" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                    <span className="text-white text-[10px] font-bold">3</span>
-                  </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                      <span className="text-white text-[10px] font-bold">{unreadCount}</span>
+                    </span>
+                  )}
                 </button>
 
                 {/* User Avatar - Enhanced */}
@@ -182,6 +160,11 @@ export function Header({ isMobile = false, sidebarOpen = false, setSidebarOpen, 
 
       {/* SPACER - Taller to accommodate larger header */}
       <div className="h-32"></div>
+
+      {/* Notification Panel */}
+      {showNotificationPanel && (
+        <NotificationPanel onClose={() => setShowNotificationPanel(false)} />
+      )}
     </>
   )
 }

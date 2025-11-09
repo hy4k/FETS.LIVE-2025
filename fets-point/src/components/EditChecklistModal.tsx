@@ -12,7 +12,9 @@ interface ChecklistTemplateItem {
   estimated_time_minutes: number;
   responsible_role: string;
   sort_order: number;
-  answer_type: string;
+  answer_type?: string; // Legacy field
+  question_type?: string; // New field - matches database schema
+  dropdown_options?: string[]; // New field - for dropdown/radio options
   is_required: boolean;
 }
 
@@ -54,7 +56,8 @@ export function EditChecklistModal({ isOpen, onClose, checklist, items, onSucces
       estimated_time_minutes: 5,
       responsible_role: 'staff',
       sort_order: editItems.length + 1,
-      answer_type: 'checkbox',
+      question_type: 'checkbox',
+      dropdown_options: [],
       is_required: true,
     };
     setEditItems([...editItems, newItem]);
@@ -122,7 +125,8 @@ export function EditChecklistModal({ isOpen, onClose, checklist, items, onSucces
         estimated_time_minutes: item.estimated_time_minutes,
         responsible_role: item.responsible_role,
         sort_order: index + 1,
-        answer_type: item.answer_type,
+        question_type: item.question_type || item.answer_type || 'checkbox', // Use question_type, fallback to answer_type
+        dropdown_options: item.dropdown_options || null, // Include dropdown options
         is_required: item.is_required,
       }));
 
@@ -238,6 +242,40 @@ export function EditChecklistModal({ isOpen, onClose, checklist, items, onSucces
                           className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
                           placeholder="Description (optional)"
                         />
+
+                        {/* Question Type Selector */}
+                        <div>
+                          <label className="block text-xs text-white/60 mb-1">Answer Type</label>
+                          <select
+                            value={item.question_type || item.answer_type || 'checkbox'}
+                            onChange={(e) => updateItem(index, 'question_type', e.target.value)}
+                            className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                          >
+                            <option value="checkbox">Checkbox (Yes/No)</option>
+                            <option value="text">Short Text</option>
+                            <option value="textarea">Long Text</option>
+                            <option value="number">Number</option>
+                            <option value="dropdown">Dropdown</option>
+                            <option value="radio">Radio Buttons</option>
+                            <option value="date">Date</option>
+                            <option value="time">Time</option>
+                          </select>
+                        </div>
+
+                        {/* Dropdown/Radio Options */}
+                        {((item.question_type || item.answer_type) === 'dropdown' || (item.question_type || item.answer_type) === 'radio') && (
+                          <div>
+                            <label className="block text-xs text-white/60 mb-1">Options (comma-separated)</label>
+                            <input
+                              type="text"
+                              value={(item.dropdown_options || []).join(', ')}
+                              onChange={(e) => updateItem(index, 'dropdown_options', e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                              placeholder="e.g., Option 1, Option 2, Option 3"
+                            />
+                          </div>
+                        )}
+
                         <div className="grid grid-cols-3 gap-3">
                           <div>
                             <label className="block text-xs text-white/60 mb-1">Priority</label>

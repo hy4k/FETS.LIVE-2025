@@ -104,44 +104,17 @@ export function CustomChecklistSelector({
             ) : (
               <div className="text-center py-12">
                 <ClipboardList className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Custom Checklists</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Custom Checklists Available</h3>
+                <p className="text-gray-600 mb-2">
                   You haven't created any custom checklists yet.
                 </p>
-                <button
-                  onClick={() => {
-                    onCreateNew();
-                    onClose();
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-black rounded-xl font-semibold transition-all inline-flex items-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Create Your First Checklist
-                </button>
+                <p className="text-gray-500 text-sm">
+                  Go to <span className="font-semibold text-amber-600">FETS Manager</span> to create custom checklist templates.
+                </p>
               </div>
             )}
           </div>
 
-          {/* Footer */}
-          {customTemplates.length > 0 && (
-            <div className="p-6 border-t border-gray-200 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  Or create a new custom checklist template
-                </p>
-                <button
-                  onClick={() => {
-                    onCreateNew();
-                    onClose();
-                  }}
-                  className="px-5 py-2.5 bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-amber-400 text-gray-900 rounded-xl font-semibold transition-all inline-flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create New
-                </button>
-              </div>
-            </div>
-          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>

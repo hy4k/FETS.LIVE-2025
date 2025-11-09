@@ -94,12 +94,14 @@ function ModernStatsCard({
   onClick, 
   clickable = false 
 }: ModernStatsCardProps) {
-  const statusClass = {
+  const statusClassMap: Record<string, string> = {
     positive: 'status-positive',
-    warning: 'status-warning', 
+    warning: 'status-warning',
     neutral: 'status-neutral',
-    primary: 'status-warning' // Default to primary gradient
-  }[status]
+    primary: 'status-warning'
+  }
+
+  const statusClass = statusClassMap[status] || statusClassMap.primary
 
   return (
     <div 

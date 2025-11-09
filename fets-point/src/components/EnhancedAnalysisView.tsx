@@ -34,7 +34,7 @@ export const EnhancedAnalysisView: React.FC<AnalysisViewProps> = ({
     // Filter staff by active branch
     let filteredStaff = staffProfiles
     if (activeBranch !== 'global') {
-      filteredStaff = staffProfiles.filter(s => s.base_centre === activeBranch)
+      filteredStaff = staffProfiles.filter(s => s.branch_assigned === activeBranch)
     }
     
     // Filter schedules for branch staff

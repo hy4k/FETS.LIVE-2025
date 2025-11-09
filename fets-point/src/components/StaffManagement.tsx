@@ -37,7 +37,7 @@ function BaseCentreBadge({ centre, size = 'sm' }: BaseCentreBadgeProps) {
     )
   }
   
-  const config = {
+  const configMap: Record<string, { bg: string; text: string; border: string; name: string }> = {
     calicut: {
       bg: 'bg-yellow-100',
       text: 'text-yellow-800',
@@ -45,13 +45,32 @@ function BaseCentreBadge({ centre, size = 'sm' }: BaseCentreBadgeProps) {
       name: 'Calicut'
     },
     cochin: {
-      bg: 'bg-green-100', 
+      bg: 'bg-green-100',
       text: 'text-green-800',
       border: 'border-green-200',
       name: 'Cochin'
+    },
+    irinjalakuda: {
+      bg: 'bg-blue-100',
+      text: 'text-blue-800',
+      border: 'border-blue-200',
+      name: 'Irinjalakuda'
+    },
+    kodungallur: {
+      bg: 'bg-purple-100',
+      text: 'text-purple-800',
+      border: 'border-purple-200',
+      name: 'Kodungallur'
     }
-  }[centre]
-  
+  }
+
+  const config = configMap[centre] || {
+    bg: 'bg-gray-100',
+    text: 'text-gray-800',
+    border: 'border-gray-200',
+    name: centre || 'Unknown'
+  }
+
   return (
     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text} ${config.border} border`}>
       <MapPin className="w-3 h-3 mr-1" />
@@ -206,7 +225,7 @@ function EditStaffModal({ staff, isOpen, onClose, onSave, onDelete, isSuperAdmin
         full_name: staff.full_name,
         role: staff.role,
         department: staff.department,
-        base_centre: staff.base_centre
+        branch_assigned: staff.branch_assigned
       })
     }
   }, [staff])
@@ -304,10 +323,10 @@ function EditStaffModal({ staff, isOpen, onClose, onSave, onDelete, isSuperAdmin
                 Base Centre
               </label>
               <select
-                value={formData.base_centre || ''}
+                value={formData.branch_assigned || ''}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  base_centre: e.target.value as 'calicut' | 'cochin' | null
+                  branch_assigned: e.target.value as 'calicut' | 'cochin' | null
                 })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -381,7 +400,7 @@ function AddStaffModal({ isOpen, onClose, onSuccess }: AddStaffModalProps) {
     password: '',
     role: 'staff',
     department: 'Operations',
-    base_centre: 'calicut' as 'calicut' | 'cochin' | null,
+    branch_assigned: 'calicut' as 'calicut' | 'cochin' | null,
   })
   const [saving, setSaving] = useState(false)
 
@@ -424,7 +443,7 @@ function AddStaffModal({ isOpen, onClose, onSuccess }: AddStaffModalProps) {
             <input type="password" placeholder="Set Initial Password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
             <input type="text" placeholder="Role (e.g., staff, admin)" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
             <input type="text" placeholder="Department" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
-            <select value={formData.base_centre || ''} onChange={(e) => setFormData({ ...formData, base_centre: e.target.value as 'calicut' | 'cochin' | null })} className="w-full px-4 py-3 border border-gray-300 rounded-xl">
+            <select value={formData.branch_assigned || ''} onChange={(e) => setFormData({ ...formData, branch_assigned: e.target.value as 'calicut' | 'cochin' | null })} className="w-full px-4 py-3 border border-gray-300 rounded-xl">
               <option value="calicut">Calicut Centre</option>
               <option value="cochin">Cochin Centre</option>
               <option value="">Global Access</option>
@@ -472,12 +491,12 @@ export function StaffManagement() {
       })
       .filter(s => {
         if (selectedCentre === 'all') return true
-        if (selectedCentre === 'global') return !s.base_centre
-        return s.base_centre === selectedCentre
+        if (selectedCentre === 'global') return !s.branch_assigned
+        return s.branch_assigned === selectedCentre
       })
       .filter(s => {
         if (userAccessLevel === 'admin' && activeBranch !== 'global') {
-          return s.base_centre === activeBranch || s.role === 'super_admin'
+          return s.branch_assigned === activeBranch || s.role === 'super_admin'
         }
         return true
       })
@@ -508,9 +527,9 @@ export function StaffManagement() {
   
   const getStaffStats = () => {
     const total = filteredStaff.length
-    const calicut = filteredStaff.filter(s => s.base_centre === 'calicut').length
-    const cochin = filteredStaff.filter(s => s.base_centre === 'cochin').length
-    const global = filteredStaff.filter(s => !s.base_centre).length
+    const calicut = filteredStaff.filter(s => s.branch_assigned === 'calicut').length
+    const cochin = filteredStaff.filter(s => s.branch_assigned === 'cochin').length
+    const global = filteredStaff.filter(s => !s.branch_assigned).length
     
     return { total, calicut, cochin, global }
   }
@@ -663,12 +682,12 @@ export function StaffManagement() {
                     <span className="text-sm text-gray-900">{staffMember.department}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <BaseCentreBadge centre={staffMember.base_centre} />
+                    <BaseCentreBadge centre={staffMember.branch_assigned} />
                   </td>
                   <td className="px-6 py-4">
                     {userAccessLevel === 'super_admin' || (
                       userAccessLevel === 'admin' && 
-                      (staffMember.base_centre === activeBranch || activeBranch === 'global')
+                      (staffMember.branch_assigned === activeBranch || activeBranch === 'global')
                     ) ? (
                       <button
                         onClick={() => handleEditStaff(staffMember)}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Send, Image as ImageIcon, Trash2, X, MessageSquare, HelpCircle, Award, BarChart3, Paperclip, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, Send, Image as ImageIcon, Trash2, X, MessageSquare, HelpCircle, Award, BarChart3, Paperclip, Share2, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -13,6 +13,7 @@ import {
 } from '../hooks/useSocial';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
+import { formatBranchName, getBranchColor } from '../utils/authUtils';
 
 const FetsConnectNew: React.FC = () => {
   const { data: posts = [], isLoading } = useSocialPosts();
@@ -365,7 +366,7 @@ const FetsConnectNew: React.FC = () => {
                         {post.user?.full_name?.charAt(0) || 'U'}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold text-gray-900">{post.user?.full_name || 'Unknown User'}</h3>
                           {post.post_type && (
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -378,6 +379,13 @@ const FetsConnectNew: React.FC = () => {
                                post.post_type === 'kudos' ? '🏆 Kudos' :
                                post.post_type === 'poll' ? '📊 Poll' :
                                '💬 Discussion'}
+                            </span>
+                          )}
+                          {/* Branch Badge */}
+                          {post.user?.branch_assigned && (
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium text-white flex items-center gap-1 ${getBranchColor(post.user.branch_assigned)}`}>
+                              <MapPin className="w-3 h-3" />
+                              {formatBranchName(post.user.branch_assigned)}
                             </span>
                           )}
                         </div>

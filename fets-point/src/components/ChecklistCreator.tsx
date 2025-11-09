@@ -236,8 +236,8 @@ export function ChecklistCreator({ isOpen, onClose, onSuccess }: ChecklistCreato
         estimated_time_minutes: 5,
         responsible_role: 'staff',
         sort_order: index,
-        answer_type: question.answer_type,
-        options: (question.answer_type === 'dropdown' || question.answer_type === 'radio')
+        question_type: question.answer_type,  // Save as question_type to match the schema
+        dropdown_options: (question.answer_type === 'dropdown' || question.answer_type === 'radio')
           ? question.options
           : null,
         is_required: question.is_required,

@@ -54,7 +54,7 @@ export function SevenDayRosterDisplay() {
             date,
             shift_code,
             overtime_hours,
-            staff_profiles(full_name, base_centre)
+            staff_profiles(full_name, branch_assigned)
           `)
           .gte('date', startDate)
           .lte('date', endDateStr)
@@ -74,7 +74,7 @@ export function SevenDayRosterDisplay() {
         let filteredRosters = rosters || []
         if (activeBranch !== 'global') {
           filteredRosters = filteredRosters.filter((roster: any) =>
-            roster.staff_profiles?.base_centre === activeBranch
+            roster.staff_profiles?.branch_assigned === activeBranch
           )
         }
 

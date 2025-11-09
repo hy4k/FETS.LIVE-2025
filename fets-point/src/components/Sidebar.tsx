@@ -56,7 +56,7 @@ const navigationGroups = {
     { id: 'fets-vault', name: 'Resource Centre', icon: FolderLock },
   ],
   admin: [
-    { id: 'fets-manager', name: 'FETS Manager', icon: Shield, role: ['super_admin', 'admin'], badge: 'ADMIN' },
+    { id: 'fets-manager', name: 'FETS Manager', icon: Shield, role: ['super_admin'], badge: 'ADMIN' },
     { id: 'settings', name: 'Settings', icon: Sliders },
   ]
 }

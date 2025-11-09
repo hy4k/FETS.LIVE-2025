@@ -7,6 +7,11 @@ import { supabase } from '../lib/supabase';
 
 import { BranchContext, BranchType, ViewMode } from './BranchContextValue';
 
+import { canSwitchBranches } from '../utils/authUtils';
+
+// Re-export types for convenience
+export type { BranchType, ViewMode };
+
 
 
 interface BranchProviderProps {
@@ -127,6 +132,18 @@ export function BranchProvider({ children }: BranchProviderProps) {
 
   const setActiveBranch = useCallback(async (branch: BranchType) => {
 
+    // Only super admins can switch branches after login
+
+    if (!canSwitchBranches(profile?.email, profile?.role)) {
+
+      console.warn('⚠️ Branch switching is only available to super admins');
+
+      return;
+
+    }
+
+
+
     if (!canAccessBranch(branch) || branch === activeBranch) return;
 
 
@@ -137,9 +154,35 @@ export function BranchProvider({ children }: BranchProviderProps) {
 
     try {
 
-      localStorage.setItem('fets-active-branch', branch);
+      // Update the branch in the database for persistence
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+      if (user?.id) {
+
+        const { error } = await supabase
+
+          .from('staff_profiles')
+
+          .update({ branch_assigned: branch })
+
+          .eq('user_id', user.id);
+
+
+
+        if (error) {
+
+          console.error('❌ Error updating branch:', error.message);
+
+          setIsSwitching(false);
+
+          return;
+
+        }
+
+      }
+
+
+
+      // Update the state immediately so components can react
 
       setActiveBranchState(branch);
 
@@ -155,41 +198,37 @@ export function BranchProvider({ children }: BranchProviderProps) {
 
       console.log(`🏢 Switched to ${branch} branch`);
 
+
+
+      // Force a small delay to ensure state updates propagate
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
     } finally {
 
       setTimeout(() => setIsSwitching(false), 300);
 
     }
 
-  }, [canAccessBranch, activeBranch, viewMode]);
+  }, [canAccessBranch, activeBranch, viewMode, profile, user]);
 
 
 
-  // Load initial branch preference from localStorage or user's assigned branch
+  // Load initial branch from user's profile (set at login)
 
   useEffect(() => {
 
     if (profile) {
 
-      const savedBranch = localStorage.getItem('fets-active-branch') as BranchType;
-
       const defaultBranch = profile.branch_assigned === 'both' ? 'calicut' : profile.branch_assigned;
 
+      setActiveBranchState(defaultBranch);
 
-
-      if (savedBranch && canAccessBranch(savedBranch)) {
-
-        setActiveBranchState(savedBranch);
-
-      } else {
-
-        setActiveBranchState(defaultBranch);
-
-      }
+      console.log(`🏢 Loaded branch from profile: ${defaultBranch}`);
 
     }
 
-  }, [profile, canAccessBranch]);
+  }, [profile]);
 
 
 

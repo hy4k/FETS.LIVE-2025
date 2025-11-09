@@ -7,6 +7,7 @@ interface BranchStatus {
   branch_name: string;
   workstations_total: number;
   workstations_active: number;
+  active_sessions?: number;
   network_status: 'optimal' | 'moderate' | 'issues';
   power_status: 'optimal' | 'moderate' | 'issues';
   staff_total: number;

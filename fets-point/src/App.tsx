@@ -109,11 +109,6 @@ function AppContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const isMobile = useIsMobile()
   const screenSize = useScreenSize()
-  const [hideBranchSelector, setHideBranchSelector] = useState(false);
-
-  useEffect(() => {
-    setHideBranchSelector(activeTab === 'fets-connect');
-  }, [activeTab]);
 
 
   // Log app initialization
@@ -188,7 +183,7 @@ function AppContent() {
         name: 'FETS Calendar'
       },
       'fets-connect': {
-        component: <FetsConnect onNavigate={setActiveTab} />,
+        component: <FetsConnect />,
         name: 'FETS Connect'
       },
       'my-desk': {
@@ -251,11 +246,10 @@ function AppContent() {
   return (
     <div className={`golden-theme min-h-screen relative branch-global`}>
       {/* Single Unified Header */}
-      <Header 
-        isMobile={isMobile} 
-        sidebarOpen={sidebarOpen} 
+      <Header
+        isMobile={isMobile}
+        sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        hideBranchSelector={hideBranchSelector}
       />
       
 

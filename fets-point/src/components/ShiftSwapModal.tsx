@@ -50,13 +50,13 @@ export const ShiftSwapModal: React.FC<ShiftSwapModalProps> = ({
     try {
       let query = supabase
         .from('staff_profiles')
-        .select('id, full_name, role, base_centre')
+        .select('id, full_name, role, branch_assigned')
         .not('full_name', 'in', '("MITHUN","NIYAS","Mithun","Niyas")')
         .neq('id', profile?.id) // Exclude current user
       
       // Apply branch filtering
       if (activeBranch !== 'global') {
-        query = query.eq('base_centre', activeBranch)
+        query = query.eq('branch_assigned', activeBranch)
       }
       
       const { data, error } = await query.order('full_name')

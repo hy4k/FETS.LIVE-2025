@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { supabase, config } from '../lib/supabase'
-import { Shield } from 'lucide-react'
+import { Shield, MapPin } from 'lucide-react'
+import { getAvailableBranches, formatBranchName } from '../utils/authUtils'
 
 export function Login() {
   const [email, setEmail] = useState('mithun@fets.in') // Pre-fill test credentials
   const [password, setPassword] = useState('123456')
+  const [selectedBranch, setSelectedBranch] = useState<string>('calicut')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { signIn } = useAuth()
+
+  // Get available branches based on email (for UI preview)
+  const availableBranches = getAvailableBranches(email, null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,6 +45,21 @@ export function Login() {
         }
         setError(`Login failed: ${error.message}`)
       } else {
+        // After successful login, update user's selected branch
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { error: updateError } = await supabase
+            .from('staff_profiles')
+            .update({ branch_assigned: selectedBranch })
+            .eq('user_id', user.id)
+
+          if (updateError) {
+            console.error('❌ Error updating branch:', updateError.message)
+          } else {
+            console.log(`✅ Branch set to: ${selectedBranch}`)
+          }
+        }
+
         if (import.meta.env.DEV) {
           console.log('Login successful!')
         }
@@ -133,6 +153,37 @@ export function Login() {
                 }}
                 required
               />
+            </div>
+
+            {/* Branch Selector */}
+            <div className="space-y-2">
+              <label htmlFor="branch" className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                <MapPin className="h-4 w-4 mr-2 text-amber-500" />
+                Select Your Branch
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {availableBranches.map((branch) => (
+                  <button
+                    key={branch}
+                    type="button"
+                    onClick={() => setSelectedBranch(branch)}
+                    className={`
+                      px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform
+                      ${selectedBranch === branch
+                        ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg scale-105 border-2 border-yellow-500'
+                        : 'bg-white border-2 border-yellow-200 text-gray-700 hover:border-yellow-400 hover:shadow-md'
+                      }
+                    `}
+                    style={{
+                      boxShadow: selectedBranch === branch
+                        ? '0 4px 12px rgba(251, 191, 36, 0.4)'
+                        : '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    {formatBranchName(branch)}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Premium GO LIVE Button */}

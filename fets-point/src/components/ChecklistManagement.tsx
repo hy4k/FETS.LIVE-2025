@@ -52,10 +52,15 @@ interface ChecklistInstance {
 interface ChecklistInstanceItem {
   id: string
   instance_id: string
+  template_item_id?: string
   title: string
+  description?: string
   is_completed: boolean
+  notes?: string
   completed_by?: string
   completed_at?: string
+  priority?: string
+  sort_order?: number
 }
 
 const PRIORITY_CONFIG = {
@@ -81,10 +86,13 @@ export function ChecklistManagement() {
   const [showFillModal, setShowFillModal] = useState(false)
   const [showCreateCustomModal, setShowCreateCustomModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<ChecklistTemplate | null>(null)
   const [selectedTemplateItems, setSelectedTemplateItems] = useState<ChecklistTemplateItem[]>([])
   const [editingTemplate, setEditingTemplate] = useState<ChecklistTemplate | null>(null)
   const [editingItems, setEditingItems] = useState<ChecklistTemplateItem[]>([])
+  const [viewingInstance, setViewingInstance] = useState<ChecklistInstance | null>(null)
+  const [viewingInstanceItems, setViewingInstanceItems] = useState<ChecklistInstanceItem[]>([])
 
   // Fill checklist state
   const [fillData, setFillData] = useState({
@@ -316,6 +324,33 @@ export function ChecklistManagement() {
     setEditingTemplate(template)
     setEditingItems(items.map(item => ({ ...item })))
     setShowEditModal(true)
+  }
+
+  const handleViewInstance = async (instance: ChecklistInstance) => {
+    try {
+      console.log('Loading instance items for:', instance.id)
+
+      // Fetch instance items
+      const { data: items, error } = await supabase
+        .from('checklist_instance_items')
+        .select('*')
+        .eq('instance_id', instance.id)
+        .order('sort_order', { ascending: true })
+
+      if (error) {
+        console.error('Error loading instance items:', error)
+        toast.error('Failed to load checklist details')
+        return
+      }
+
+      console.log('Loaded instance items:', items)
+      setViewingInstance(instance)
+      setViewingInstanceItems(items || [])
+      setShowViewModal(true)
+    } catch (error: any) {
+      console.error('Error in handleViewInstance:', error)
+      toast.error(error.message || 'Failed to load checklist')
+    }
   }
 
   const addQuestionToTemplate = () => {
@@ -991,7 +1026,11 @@ export function ChecklistManagement() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors">
+                          <button
+                            onClick={() => handleViewInstance(instance)}
+                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors"
+                            title="View details"
+                          >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors">
@@ -1395,6 +1434,160 @@ export function ChecklistManagement() {
                   <CheckCircle2 className="w-5 h-5" />
                   Create Checklist
                 </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* View Instance Modal */}
+      <AnimatePresence>
+        {showViewModal && viewingInstance && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowViewModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white">{viewingInstance.name}</h2>
+                      <p className="text-white/80 text-sm">
+                        Submitted on {new Date(viewingInstance.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowViewModal(false)}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-white" />
+                  </button>
+                </div>
+
+                {/* Status and metadata */}
+                <div className="mt-4 flex items-center gap-4 text-sm text-white/90">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span className="capitalize">{viewingInstance.branch_location}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>Exam: {new Date(viewingInstance.exam_date).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="w-4 h-4" />
+                    <span className="capitalize">{viewingInstance.category}</span>
+                  </div>
+                  {viewingInstance.completed_at && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Completed</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Checklist items */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)]">
+                <div className="space-y-3">
+                  {viewingInstanceItems.length === 0 ? (
+                    <div className="text-center py-12">
+                      <ClipboardList className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">No items found in this checklist</p>
+                    </div>
+                  ) : (
+                    viewingInstanceItems.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className={`p-4 rounded-xl border-2 transition-all ${
+                          item.is_completed
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-1">
+                            {item.is_completed ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <Circle className="w-5 h-5 text-gray-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900 mb-1">
+                                  {index + 1}. {item.title}
+                                </h4>
+                                {item.description && (
+                                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                                )}
+
+                                {/* Show answer for non-checkbox questions */}
+                                {item.notes && (
+                                  <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200">
+                                    <p className="text-xs font-medium text-gray-500 mb-1">Answer:</p>
+                                    <p className="text-sm text-gray-900">{item.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+
+                              {item.priority && (
+                                <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium border ${
+                                  PRIORITY_CONFIG[item.priority as keyof typeof PRIORITY_CONFIG]?.color || 'bg-gray-100 text-gray-700 border-gray-200'
+                                }`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    PRIORITY_CONFIG[item.priority as keyof typeof PRIORITY_CONFIG]?.dot || 'bg-gray-500'
+                                  }`}></span>
+                                  {PRIORITY_CONFIG[item.priority as keyof typeof PRIORITY_CONFIG]?.label || item.priority}
+                                </span>
+                              )}
+                            </div>
+
+                            {item.completed_at && (
+                              <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                <Clock className="w-3 h-3" />
+                                <span>Completed at {new Date(item.completed_at).toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold">
+                      {viewingInstanceItems.filter(item => item.is_completed).length} / {viewingInstanceItems.length}
+                    </span> tasks completed
+                  </div>
+                  <button
+                    onClick={() => setShowViewModal(false)}
+                    className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

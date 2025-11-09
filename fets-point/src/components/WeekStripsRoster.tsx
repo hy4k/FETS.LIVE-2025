@@ -7,7 +7,7 @@ interface Staff {
   role: string;
   department?: string;
   user_id?: string;
-  base_centre?: 'calicut' | 'cochin' | null;
+  branch_assigned?: 'calicut' | 'cochin' | null;
 }
 
 interface Schedule {
@@ -263,7 +263,7 @@ const WeekStripsRoster: React.FC<WeekStripsRosterProps> = ({
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900">{staff.full_name}</div>
-                        <div className="text-sm text-gray-600">{staff.base_centre ? staff.base_centre.charAt(0).toUpperCase() + staff.base_centre.slice(1) : 'Global'}</div>
+                        <div className="text-sm text-gray-600">{staff.branch_assigned ? staff.branch_assigned.charAt(0).toUpperCase() + staff.branch_assigned.slice(1) : 'Global'}</div>
                       </div>
                     </div>
                     

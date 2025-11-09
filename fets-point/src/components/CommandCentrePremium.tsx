@@ -10,6 +10,7 @@ import { CreateCustomChecklistModal } from './CreateCustomChecklistModal'
 import { CustomChecklistSelector } from './CustomChecklistSelector'
 import { SevenDayCalendarWidget } from './SevenDayCalendarWidget'
 import { SevenDayRosterDisplay } from './SevenDayRosterDisplay'
+import { NewsTickerBar } from './NewsTickerBar'
 import { supabase } from '../lib/supabase'
 import { toast } from 'react-hot-toast'
 
@@ -42,7 +43,7 @@ interface ChecklistTemplateItem {
   responsible_role: string
   sort_order: number
   notes?: string
-  question_type?: 'checkbox' | 'text' | 'number' | 'dropdown' | 'date' | 'time'
+  question_type?: 'checkbox' | 'text' | 'number' | 'dropdown' | 'date' | 'time' | 'textarea' | 'radio'
   dropdown_options?: string[]
 }
 
@@ -234,7 +235,7 @@ export default function CommandCentrePremium() {
     }))
   }
 
-  const submitChecklist = async (data: { exam_date: string; items: { [key: string]: boolean } }, template: ChecklistTemplate | null) => {
+  const submitChecklist = async (data: { exam_date: string; items: { [key: string]: boolean | string | number } }, template: ChecklistTemplate | null) => {
     console.log('submitChecklist called', { data, template, profile })
 
     if (!profile) {
@@ -267,7 +268,19 @@ export default function CommandCentrePremium() {
       return
     }
 
-    const allCompleted = itemsForTemplate.every(item => data.items[item.id.toString()])
+    const allCompleted = itemsForTemplate.every(item => {
+      const itemValue = data.items[item.id.toString()]
+      const questionType = item.question_type || 'checkbox'
+
+      if (questionType === 'checkbox') {
+        return itemValue === true
+      } else if (questionType === 'radio') {
+        // Radio type now stores array of selected values
+        return Array.isArray(itemValue) && itemValue.length > 0
+      } else {
+        return itemValue !== '' && itemValue !== null && itemValue !== undefined
+      }
+    })
 
     if (!allCompleted) {
       const proceed = confirm('Not all items are checked. Do you want to submit anyway?')
@@ -299,17 +312,44 @@ export default function CommandCentrePremium() {
 
       console.log('Instance created:', instance)
 
-      const instanceItems = itemsForTemplate.map(item => ({
-        instance_id: instance.id,
-        template_item_id: item.id,
-        title: item.title,
-        description: item.description,
-        priority: item.priority,
-        is_completed: data.items[item.id.toString()] || false,
-        completed_by: data.items[item.id.toString()] ? profile.id : null,
-        completed_at: data.items[item.id.toString()] ? new Date().toISOString() : null,
-        sort_order: item.sort_order
-      }))
+      const instanceItems = itemsForTemplate.map(item => {
+        const itemValue = data.items[item.id.toString()]
+        const questionType = item.question_type || 'checkbox'
+
+        // For checkbox type, itemValue is boolean
+        // For radio type (now multi-select), itemValue is array
+        // For other types (text, number, dropdown, etc.), itemValue is string/number
+        const isCheckbox = questionType === 'checkbox'
+        const isRadio = questionType === 'radio'
+        const isCompleted = isCheckbox
+          ? (itemValue === true)
+          : isRadio
+            ? (Array.isArray(itemValue) && itemValue.length > 0)
+            : (itemValue !== '' && itemValue !== null && itemValue !== undefined)
+
+        // Store array values as JSON for radio type
+        let notesValue = null
+        if (!isCheckbox) {
+          if (isRadio && Array.isArray(itemValue)) {
+            notesValue = JSON.stringify(itemValue)
+          } else {
+            notesValue = String(itemValue || '')
+          }
+        }
+
+        return {
+          instance_id: instance.id,
+          template_item_id: item.id,
+          title: item.title,
+          description: item.description,
+          priority: item.priority,
+          is_completed: isCompleted,
+          notes: notesValue,
+          completed_by: isCompleted ? profile.id : null,
+          completed_at: isCompleted ? new Date().toISOString() : null,
+          sort_order: item.sort_order
+        }
+      })
 
       console.log('Inserting instance items:', instanceItems)
 
@@ -418,6 +458,9 @@ export default function CommandCentrePremium() {
     <div className="min-h-screen -mt-32 pt-48" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       {/* White/Off-white gap between header and command centre section */}
       <div className="h-6 bg-white/85 -mx-8 -mt-12 mb-8"></div>
+
+      {/* News Ticker Bar - Above Command Centre Header */}
+      <NewsTickerBar />
 
       <div className="max-w-7xl mx-auto px-8">
         {/* Premium Header Section - With spacing from yellow banner */}
@@ -567,12 +610,12 @@ export default function CommandCentrePremium() {
                       Custom Checklist
                     </h3>
                     <p className="text-sm text-white/80 font-medium leading-relaxed">
-                      Create your own task template
+                      Fill out your custom task templates
                     </p>
                   </div>
                   <div className="mt-5 flex items-center gap-2 text-white font-bold group-hover:translate-x-2 transition-transform duration-300">
-                    <span>Create</span>
-                    <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                    <span>Start</span>
+                    <ChevronRight size={18} className="group-hover:animate-pulse" />
                   </div>
                 </motion.button>
               </div>
@@ -756,7 +799,12 @@ export default function CommandCentrePremium() {
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600">
                     <span className="font-semibold">
-                      {Object.values(fillData.items).filter(Boolean).length} / {selectedTemplateItems.length}
+                      {selectedTemplateItems.filter(item => {
+                        const itemValue = fillData.items[item.id.toString()]
+                        const questionType = item.question_type || 'checkbox'
+                        if (questionType === 'checkbox') return itemValue === true
+                        return itemValue !== '' && itemValue !== null && itemValue !== undefined
+                      }).length} / {selectedTemplateItems.length}
                     </span> tasks completed
                   </div>
                   <div className="flex gap-3">
@@ -840,27 +888,22 @@ export default function CommandCentrePremium() {
                 </div>
 
                 <div className="space-y-3">
-                  {selectedCustomItems.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        fillData.items[item.id.toString()]
-                          ? 'bg-green-50 border-green-300'
-                          : 'bg-white border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <label className="flex items-start gap-4 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={fillData.items[item.id.toString()] || false}
-                          onChange={(e) => setFillData(prev => ({
-                            ...prev,
-                            items: { ...prev.items, [item.id.toString()]: e.target.checked }
-                          }))}
-                          className="mt-1 w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between gap-3 mb-1">
+                  {selectedCustomItems.map((item, index) => {
+                    const questionType = item.question_type || 'checkbox'
+                    const itemValue = fillData.items[item.id.toString()]
+                    const isCompleted = questionType === 'checkbox' ? itemValue === true : !!itemValue
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-4 rounded-xl border-2 transition-all ${
+                          isCompleted
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="mb-3">
+                          <div className="flex items-start justify-between gap-3 mb-2">
                             <h4 className="font-semibold text-gray-900">
                               {index + 1}. {item.title}
                             </h4>
@@ -869,12 +912,142 @@ export default function CommandCentrePremium() {
                             </span>
                           </div>
                           {item.description && (
-                            <p className="text-sm text-gray-600">{item.description}</p>
+                            <p className="text-sm text-gray-600 mb-3">{item.description}</p>
+                          )}
+
+                          {/* Render input based on question type */}
+                          {questionType === 'checkbox' && (
+                            <label className="flex items-center gap-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={itemValue === true}
+                                onChange={(e) => setFillData(prev => ({
+                                  ...prev,
+                                  items: { ...prev.items, [item.id.toString()]: e.target.checked }
+                                }))}
+                                className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                              />
+                              <span className="text-sm text-gray-700">Mark as completed</span>
+                            </label>
+                          )}
+
+                          {questionType === 'text' && (
+                            <input
+                              type="text"
+                              value={itemValue || ''}
+                              onChange={(e) => setFillData(prev => ({
+                                ...prev,
+                                items: { ...prev.items, [item.id.toString()]: e.target.value }
+                              }))}
+                              placeholder="Enter your answer..."
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          )}
+
+                          {questionType === 'number' && (
+                            <input
+                              type="number"
+                              value={itemValue || ''}
+                              onChange={(e) => setFillData(prev => ({
+                                ...prev,
+                                items: { ...prev.items, [item.id.toString()]: e.target.value }
+                              }))}
+                              placeholder="Enter a number..."
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          )}
+
+                          {questionType === 'dropdown' && item.dropdown_options && (
+                            <select
+                              value={itemValue || ''}
+                              onChange={(e) => setFillData(prev => ({
+                                ...prev,
+                                items: { ...prev.items, [item.id.toString()]: e.target.value }
+                              }))}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                            >
+                              <option value="">Select an option...</option>
+                              {item.dropdown_options.map((option, idx) => (
+                                <option key={idx} value={option}>{option}</option>
+                              ))}
+                            </select>
+                          )}
+
+                          {questionType === 'date' && (
+                            <input
+                              type="date"
+                              value={itemValue || ''}
+                              onChange={(e) => setFillData(prev => ({
+                                ...prev,
+                                items: { ...prev.items, [item.id.toString()]: e.target.value }
+                              }))}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          )}
+
+                          {questionType === 'time' && (
+                            <input
+                              type="time"
+                              value={itemValue || ''}
+                              onChange={(e) => setFillData(prev => ({
+                                ...prev,
+                                items: { ...prev.items, [item.id.toString()]: e.target.value }
+                              }))}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                          )}
+
+                          {questionType === 'textarea' && (
+                            <textarea
+                              value={itemValue || ''}
+                              onChange={(e) => setFillData(prev => ({
+                                ...prev,
+                                items: { ...prev.items, [item.id.toString()]: e.target.value }
+                              }))}
+                              placeholder="Enter your answer..."
+                              rows={4}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                            />
+                          )}
+
+                          {questionType === 'radio' && item.dropdown_options && (
+                            <div className="space-y-2">
+                              {item.dropdown_options.map((option, idx) => {
+                                // Support multiple selections for radio type (using checkboxes)
+                                const selectedValues = Array.isArray(itemValue) ? itemValue : (itemValue ? [itemValue] : []);
+                                const isChecked = selectedValues.includes(option);
+
+                                return (
+                                  <label key={idx} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      value={option}
+                                      checked={isChecked}
+                                      onChange={(e) => {
+                                        const currentValues = Array.isArray(itemValue) ? [...itemValue] : (itemValue ? [itemValue] : []);
+                                        let newValues;
+                                        if (e.target.checked) {
+                                          newValues = [...currentValues, option];
+                                        } else {
+                                          newValues = currentValues.filter(v => v !== option);
+                                        }
+                                        setFillData(prev => ({
+                                          ...prev,
+                                          items: { ...prev.items, [item.id.toString()]: newValues }
+                                        }));
+                                      }}
+                                      className="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
+                                    />
+                                    <span className="text-gray-700">{option}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
-                      </label>
-                    </div>
-                  ))}
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -882,7 +1055,12 @@ export default function CommandCentrePremium() {
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600">
                     <span className="font-semibold">
-                      {Object.values(fillData.items).filter(Boolean).length} / {selectedCustomItems.length}
+                      {selectedCustomItems.filter(item => {
+                        const itemValue = fillData.items[item.id.toString()]
+                        const questionType = item.question_type || 'checkbox'
+                        if (questionType === 'checkbox') return itemValue === true
+                        return itemValue !== '' && itemValue !== null && itemValue !== undefined
+                      }).length} / {selectedCustomItems.length}
                     </span> tasks completed
                   </div>
                   <div className="flex gap-3">
