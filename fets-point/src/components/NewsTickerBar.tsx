@@ -45,16 +45,15 @@ export function NewsTickerBar() {
 
   const fetchActiveNews = async () => {
     try {
-      const now = new Date().toISOString();
       const branchName = typeof activeBranch === 'string' ? activeBranch : activeBranch?.name || 'calicut';
 
       console.log('🔄 Fetching news for branch:', branchName);
 
+      // Fetch all active news items
       const { data, error } = await supabase
         .from('news_updates')
         .select('*')
         .eq('is_active', true)
-        .or(`expires_at.is.null,expires_at.gt.${now}`)
         .order('priority', { ascending: false })
         .order('created_at', { ascending: false });
 
@@ -66,10 +65,19 @@ export function NewsTickerBar() {
       console.log('📰 Raw news data from database:', data);
       console.log('📰 Total news items fetched:', data?.length || 0);
 
-      // Filter by branch - branch_location is now a single string
-      const filteredNews = (data || []).filter(item =>
-        item.branch_location === branchName || item.branch_location === 'global'
-      );
+      // Filter by branch and expiration on client side
+      const now = new Date();
+      const filteredNews = (data || []).filter(item => {
+        // Check branch - accept if global or matches current branch
+        const branchMatch = item.branch_location === 'global' || item.branch_location === branchName;
+
+        // Check expiration - show if no expiry date or if not yet expired
+        const notExpired = !item.expires_at || new Date(item.expires_at) > now;
+
+        console.log(`Item "${item.content.substring(0, 30)}..." - Branch: ${item.branch_location}, Match: ${branchMatch}, Expired: ${!notExpired}`);
+
+        return branchMatch && notExpired;
+      });
 
       console.log('✅ Filtered news items:', filteredNews.length);
       console.log('📊 News items:', filteredNews);

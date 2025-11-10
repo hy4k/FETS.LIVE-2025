@@ -52,8 +52,7 @@ const navigationGroups = {
     { id: 'incident-manager', name: 'Incident Manager', icon: ShieldAlert },
   ],
   compliance: [
-    { id: 'fets-connect', name: 'FETS Connect', icon: MessageSquare, badge: 'NEW' },
-    { id: 'fets-vault', name: 'Resource Centre', icon: FolderLock },
+    { id: 'fets-connect', name: 'My Desk', icon: MessageSquare, badge: 'NEW' },
   ],
   admin: [
     { id: 'fets-manager', name: 'FETS Manager', icon: Shield, role: ['super_admin'], badge: 'ADMIN' },

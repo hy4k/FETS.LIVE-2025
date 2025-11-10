@@ -31,6 +31,7 @@ const FetsIntelligence = lazy(() => import('./components/FetsIntelligence').then
 const FetsRoster = lazy(() => import('./components/FetsRosterPremium'))
 const FetsCalendar = lazy(() => import('./components/FetsCalendarPremium'))
 const FetsConnect = lazy(() => import('./components/FetsConnectNew'))
+const MyDeskWrapper = lazy(() => import('./components/MyDeskWrapper'))
 const ResourceCentre = lazy(() => import('./components/ResourceCentre').then(module => ({ default: module.default })))
 const IncidentManager = lazy(() => import('./components/IncidentManager').then(module => ({ default: module.default })))
 const ChecklistManagement = lazy(() => import('./components/ChecklistManagement').then(module => ({ default: module.ChecklistManagement })))
@@ -183,8 +184,8 @@ function AppContent() {
         name: 'FETS Calendar'
       },
       'fets-connect': {
-        component: <FetsConnect />,
-        name: 'FETS Connect'
+        component: <MyDeskWrapper />,
+        name: 'My Desk'
       },
       'my-desk': {
         component: <MyDesk />,
