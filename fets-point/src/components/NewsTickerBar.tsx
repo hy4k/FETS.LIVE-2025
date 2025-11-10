@@ -30,7 +30,7 @@ export function NewsTickerBar() {
         {
           event: '*',
           schema: 'public',
-          table: 'news_items'
+          table: 'news_updates'
         },
         () => {
           fetchActiveNews();
@@ -49,7 +49,7 @@ export function NewsTickerBar() {
       const branchName = typeof activeBranch === 'string' ? activeBranch : activeBranch?.name || 'calicut';
 
       const { data, error } = await supabase
-        .from('news_items')
+        .from('news_updates')
         .select('*')
         .eq('is_active', true)
         .or(`expires_at.is.null,expires_at.gt.${now}`)
