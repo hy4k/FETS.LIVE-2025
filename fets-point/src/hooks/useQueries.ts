@@ -185,14 +185,14 @@ export const useCreateCandidate = () => {
 
 export const useUpdateIncident = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation<void, Error, { id: string; updates: any }>({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       const { error } = await supabase
-        .from('incidents')
+        .from('events')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
-      
+
       if (error) throw error
     },
     onSuccess: () => {
@@ -211,7 +211,7 @@ export const useCreateIncident = () => {
   return useMutation<void, Error, any>({
     mutationFn: async (incidentData: any) => {
       const { error } = await supabase
-        .from('incidents')
+        .from('events')
         .insert(incidentData)
 
       if (error) throw error
@@ -266,7 +266,7 @@ export const useCreateSession = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (sessionData: Inserts<'sessions'>) => {
+    mutationFn: async (sessionData: TablesInsert<'sessions'>) => {
       try {
         return await sessionsService.create(sessionData)
       } catch (error) {
@@ -285,7 +285,7 @@ export const useUpdateSession = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: number; updates: Updates<'sessions'> }) => {
+    mutationFn: async ({ id, updates }: { id: number; updates: TablesUpdate<'sessions'> }) => {
       try {
         return await sessionsService.update(id, updates)
       } catch (error) {
@@ -436,7 +436,7 @@ export const useCreatePost = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (postData: Inserts<'posts'>) => {
+    mutationFn: async (postData: TablesInsert<'posts'>) => {
       try {
         return await postsService.create(postData)
       } catch (error) {
@@ -455,7 +455,7 @@ export const useUpdatePost = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'posts'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: TablesUpdate<'posts'> }) => {
       try {
         return await postsService.update(id, updates)
       } catch (error) {
@@ -529,7 +529,7 @@ export const useSendMessage = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (message: Inserts<'chat_messages'>) => {
+    mutationFn: async (message: TablesInsert<'chat_messages'>) => {
       try {
         return await chatService.sendMessage(message)
       } catch (error) {
@@ -605,7 +605,7 @@ export const useCreateRosterSchedule = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (schedule: Inserts<'roster_schedules'>) => {
+    mutationFn: async (schedule: TablesInsert<'roster_schedules'>) => {
       try {
         return await rosterService.create(schedule)
       } catch (error) {
@@ -624,7 +624,7 @@ export const useUpdateRosterSchedule = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'roster_schedules'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: TablesUpdate<'roster_schedules'> }) => {
       try {
         return await rosterService.update(id, updates)
       } catch (error) {
@@ -685,7 +685,7 @@ export const useUpdateCandidate = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Updates<'candidates'> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: TablesUpdate<'candidates'> }) => {
       try {
         return await candidatesService.update(id, updates)
       } catch (error) {

@@ -167,7 +167,7 @@ export function useRealtimeIncidents(status?: string, branch?: string) {
         {
           event: '*',
           schema: 'public',
-          table: 'incidents',
+          table: 'events',
           // Apply filters
           ...(status && { filter: `status=eq.${status}` }),
           ...(branch && branch !== 'global' && {

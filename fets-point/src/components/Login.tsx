@@ -5,8 +5,8 @@ import { Shield, MapPin } from 'lucide-react'
 import { getAvailableBranches, formatBranchName } from '../utils/authUtils'
 
 export function Login() {
-  const [email, setEmail] = useState('mithun@fets.in') // Pre-fill test credentials
-  const [password, setPassword] = useState('123456')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [selectedBranch, setSelectedBranch] = useState<string>('calicut')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -212,7 +212,7 @@ export function Login() {
 
           {import.meta.env.DEV && (
             <div className="mt-6 text-center text-xs text-gray-500">
-              Test Credentials: mithun@fets.in / 123456
+              Development Mode: Use your FETS credentials to sign in
             </div>
           )}
         </div>

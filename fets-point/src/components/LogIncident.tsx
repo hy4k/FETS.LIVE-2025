@@ -117,7 +117,7 @@ export function LogIncident() {
     try {
       setLoading(true)
       const { data, error } = await supabase
-        .from('incidents')
+        .from('events')
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -149,7 +149,7 @@ export function LogIncident() {
 
       if (editingIncident) {
         const { error } = await supabase
-          .from('incidents')
+          .from('events')
           .update(incidentData)
           .eq('id', editingIncident.id)
 
@@ -157,7 +157,7 @@ export function LogIncident() {
         setSuccess('Incident updated successfully!')
       } else {
         const { error } = await supabase
-          .from('incidents')
+          .from('events')
           .insert([incidentData])
 
         if (error) throw error
@@ -195,7 +195,7 @@ export function LogIncident() {
 
     try {
       const { error } = await supabase
-        .from('incidents')
+        .from('events')
         .delete()
         .eq('id', incident.id)
 
