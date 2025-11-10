@@ -24,14 +24,12 @@ import { useIsMobile, useScreenSize } from './hooks/use-mobile';
 const Dashboard = lazy(() => import('./components/iCloud/iCloudDashboard').then(module => ({ default: module.ICloudDashboard })))
 const CommandCentre = lazy(() => import('./components/CommandCentrePremium').then(module => ({ default: module.default })))
 const CandidateTracker = lazy(() => import('./components/CandidateTracker').then(module => ({ default: module.CandidateTracker })))
-const MyDesk = lazy(() => import('./components/MyDesk').then(module => ({ default: module.MyDesk })))
+const MyDesk = lazy(() => import('./components/MyDeskNew').then(module => ({ default: module.MyDeskNew })))
 const StaffManagement = lazy(() => import('./components/StaffManagement').then(module => ({ default: module.StaffManagement })))
 const FetsVault = lazy(() => import('./components/FetsVault').then(module => ({ default: module.FetsVault })))
 const FetsIntelligence = lazy(() => import('./components/FetsIntelligence').then(module => ({ default: module.FetsIntelligence })))
 const FetsRoster = lazy(() => import('./components/FetsRosterPremium'))
 const FetsCalendar = lazy(() => import('./components/FetsCalendarPremium'))
-const FetsConnect = lazy(() => import('./components/FetsConnectNew'))
-const ResourceCentre = lazy(() => import('./components/ResourceCentre').then(module => ({ default: module.default })))
 const IncidentManager = lazy(() => import('./components/IncidentManager').then(module => ({ default: module.default })))
 const ChecklistManagement = lazy(() => import('./components/ChecklistManagement').then(module => ({ default: module.ChecklistManagement })))
 const NewsManager = lazy(() => import('./components/NewsManager').then(module => ({ default: module.NewsManager })))
@@ -182,10 +180,6 @@ function AppContent() {
         component: <FetsCalendar />,
         name: 'FETS Calendar'
       },
-      'fets-connect': {
-        component: <FetsConnect />,
-        name: 'FETS Connect'
-      },
       'my-desk': {
         component: <MyDesk />,
         name: 'My Desk'
@@ -193,10 +187,6 @@ function AppContent() {
       'staff-management': {
         component: <StaffManagement />,
         name: 'Staff Management'
-      },
-      'fets-vault': {
-        component: <ResourceCentre />,
-        name: 'Resource Centre'
       },
       'fets-intelligence': {
         component: <FetsIntelligence />,
