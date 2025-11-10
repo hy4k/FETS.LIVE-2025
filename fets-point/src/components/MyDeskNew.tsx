@@ -13,53 +13,41 @@ export function MyDeskNew() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-yellow-50">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header with Tabs */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-amber-200/50 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-4">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent mb-4">
-              My Desk
-            </h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent mb-6">
+          My Desk
+        </h1>
 
-            {/* Tab Navigation */}
-            <div className="flex space-x-2 border-b border-gray-200">
-              {tabs.map((tab) => {
-                const Icon = tab.icon
-                const isActive = activeTab === tab.id
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
+          {tabs.map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
 
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      relative px-6 py-3 font-medium transition-all duration-200 flex items-center space-x-2
-                      ${isActive
-                        ? 'text-amber-600'
-                        : 'text-gray-600 hover:text-gray-900'
-                      }
-                    `}
-                  >
-                    <Icon size={20} />
-                    <span>{tab.label}</span>
-
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-yellow-500"
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  relative px-6 py-3 font-medium transition-all duration-200 flex items-center space-x-2 rounded-md
+                  ${isActive
+                    ? 'bg-white text-amber-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                  }
+                `}
+              >
+                <Icon size={20} />
+                <span>{tab.label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Tab Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div>
         {activeTab === 'connect' && <FetsConnectNew />}
         {activeTab === 'resources' && <ResourceCentre />}
       </div>
