@@ -176,7 +176,8 @@ export default function ResourceCentre() {
       console.error('Error loading items:', error)
       toast.error(error?.message || 'Failed to load resources')
     }
-  }, [profile, selectedCategory, searchQuery, pins])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, selectedCategory, searchQuery])
 
   const loadPins = useCallback(async () => {
     if (!profile?.id) return
@@ -213,6 +214,7 @@ export default function ResourceCentre() {
 
   useEffect(() => {
     loadAllData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, searchQuery])
 
   const pinnedItems = useMemo(() => {
