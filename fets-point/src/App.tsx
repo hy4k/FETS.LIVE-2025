@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
@@ -109,6 +109,12 @@ function AppContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const isMobile = useIsMobile()
   const screenSize = useScreenSize()
+  const activeTabRef = useRef(activeTab)
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    activeTabRef.current = activeTab
+  }, [activeTab])
 
 
   // Log app initialization
@@ -227,13 +233,14 @@ function AppContent() {
     const currentRoute = routeComponents[activeTab] || routeComponents['command-center']
     
     return (
-      <LazyErrorBoundary 
+      <LazyErrorBoundary
         routeName={currentRoute.name}
         onGoBack={() => setActiveTab('command-center')}
         onRetry={() => {
-          // Force re-render by changing state
+          // Force re-render by changing state using ref to avoid stale closure
+          const currentTab = activeTabRef.current
           setActiveTab('')
-          setTimeout(() => setActiveTab(activeTab), 100)
+          setTimeout(() => setActiveTab(currentTab), 100)
         }}
       >
         <Suspense fallback={<PageLoadingFallback pageName={currentRoute.name} />}>

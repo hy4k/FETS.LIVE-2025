@@ -338,7 +338,7 @@ const fetchTasks = async (userId: string) => {
     .from('user_tasks')
     .select(`
       *,
-      assigned_by:profiles!assigned_by(full_name)
+      assigned_by:staff_profiles!assigned_by(full_name)
     `)
     .eq('assigned_to', userId)
     .order('created_at', { ascending: false })
@@ -497,8 +497,8 @@ const fetchKudos = async () => {
     .from('kudos')
     .select(`
       *,
-      giver:profiles!giver_id(full_name, avatar_url),
-      receiver:profiles!receiver_id(full_name, avatar_url)
+      giver:staff_profiles!giver_id(full_name, avatar_url),
+      receiver:staff_profiles!receiver_id(full_name, avatar_url)
     `)
     .order('created_at', { ascending: false })
 
