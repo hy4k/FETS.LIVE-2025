@@ -48,6 +48,8 @@ export function NewsTickerBar() {
       const now = new Date().toISOString();
       const branchName = typeof activeBranch === 'string' ? activeBranch : activeBranch?.name || 'calicut';
 
+      console.log('🔄 Fetching news for branch:', branchName);
+
       const { data, error } = await supabase
         .from('news_updates')
         .select('*')
@@ -56,16 +58,25 @@ export function NewsTickerBar() {
         .order('priority', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching news:', error);
+        throw error;
+      }
+
+      console.log('📰 Raw news data from database:', data);
+      console.log('📰 Total news items fetched:', data?.length || 0);
 
       // Filter by branch - branch_location is now a single string
       const filteredNews = (data || []).filter(item =>
         item.branch_location === branchName || item.branch_location === 'global'
       );
 
+      console.log('✅ Filtered news items:', filteredNews.length);
+      console.log('📊 News items:', filteredNews);
+
       setNewsItems(filteredNews);
     } catch (error) {
-      console.error('Error fetching news:', error);
+      console.error('❌ Error fetching news:', error);
     }
   };
 
@@ -86,8 +97,21 @@ export function NewsTickerBar() {
     };
   };
 
+  // Temporarily show debug info when there are no news items
   if (newsItems.length === 0) {
-    return null;
+    return (
+      <div className="w-full bg-yellow-500/20 backdrop-blur-xl border-b-2 border-yellow-500/30 shadow-xl">
+        <div className="max-w-7xl mx-auto px-8 py-4">
+          <div className="flex items-center gap-3 text-yellow-800">
+            <AlertCircle className="w-5 h-5" />
+            <p className="text-sm font-medium">
+              📰 News Ticker is ready but no active news items found. Create news items in the News Manager to display them here.
+              <span className="ml-2 text-xs opacity-75">(Branch: {typeof activeBranch === 'string' ? activeBranch : activeBranch?.name || 'unknown'})</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
