@@ -176,7 +176,8 @@ export default function ResourceCentre() {
       console.error('Error loading items:', error)
       toast.error(error?.message || 'Failed to load resources')
     }
-  }, [profile, selectedCategory, searchQuery, pins])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, selectedCategory, searchQuery])
 
   const loadPins = useCallback(async () => {
     if (!profile?.id) return
@@ -213,6 +214,7 @@ export default function ResourceCentre() {
 
   useEffect(() => {
     loadAllData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, searchQuery])
 
   const pinnedItems = useMemo(() => {
@@ -464,7 +466,7 @@ export default function ResourceCentre() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl animate-pulse">
             <BookOpen className="w-10 h-10 text-white" />
@@ -479,45 +481,29 @@ export default function ResourceCentre() {
   const isAdmin = userRole === 'admin' || userRole === 'super_admin'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10 backdrop-blur-sm bg-white/95">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Resource Centre</h1>
-                <p className="text-gray-600 mt-1">Access SOPs, contacts, documents, and emergency procedures</p>
-              </div>
-            </div>
-
-            {isAdmin && (
+    <div>
+      {/* Search and Controls */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-6">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search resources..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+          {isAdmin && (
+            <>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
                 Add Resource
               </button>
-            )}
-          </div>
-
-          {/* Search and Filters */}
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search resources..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              />
-            </div>
-            {isAdmin && (
               <button
                 onClick={() => setShowCategoryModal(true)}
                 className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-indigo-200 text-indigo-600 rounded-xl hover:bg-indigo-50 transition-all font-medium"
@@ -525,13 +511,13 @@ export default function ResourceCentre() {
                 <Settings className="w-4 h-4" />
                 Manage Categories
               </button>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6">
+      <div>
         {/* Stats Dashboard */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-5 shadow-md border border-gray-200">

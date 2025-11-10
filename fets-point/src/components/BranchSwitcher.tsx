@@ -10,13 +10,6 @@ export function BranchSwitcher() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Only show for super admins
-  if (!canSwitchBranches(profile?.email, profile?.role)) {
-    return null
-  }
-
-  const availableBranches = getAvailableBranches(profile?.email, profile?.role)
-
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -30,6 +23,13 @@ export function BranchSwitcher() {
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isOpen])
+
+  // Only show for super admins - check AFTER all hooks
+  if (!canSwitchBranches(profile?.email, profile?.role)) {
+    return null
+  }
+
+  const availableBranches = getAvailableBranches(profile?.email, profile?.role)
 
   const handleBranchChange = (branch: string) => {
     setActiveBranch(branch as any)
